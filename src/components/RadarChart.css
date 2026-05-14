@@ -1,0 +1,18 @@
+.radar-chart-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0;
+}
+
+.radar-svg {
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+@media (max-width: 480px) {
+  .radar-svg {
+    max-width: 280px;
+  }
+}

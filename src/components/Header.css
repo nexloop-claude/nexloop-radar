@@ -1,0 +1,75 @@
+.nx-header {
+  background: #fff;
+  border-bottom: 1px solid var(--nx-card-bord);
+  padding: 14px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.nx-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nx-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.nx-logo-nexloop {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: var(--nx-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nx-logo-radar {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--nx-preto);
+  letter-spacing: 1px;
+}
+
+.nx-header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.nx-header-pillar {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--nx-card-bg);
+  border: 1px solid var(--nx-card-bord);
+  border-radius: 100px;
+  padding: 4px 14px;
+}
+
+.nx-header-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.nx-header-actions {
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .nx-logo-nexloop,
+  .nx-logo-radar {
+    font-size: 15px;
+  }
+  .nx-header-subtitle {
+    display: none;
+  }
+}

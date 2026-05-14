@@ -1,0 +1,47 @@
+.nx-progress-section {
+  background: #fff;
+  border-bottom: 1px solid var(--nx-card-bord);
+  padding: 12px 0;
+}
+
+.nx-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.nx-progress-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.nx-progress-label strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.nx-progress-counters {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.nx-progress-pillar {
+  font-weight: 600;
+  color: var(--nx-azul);
+}
+
+.nx-progress-q {
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .nx-progress-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
