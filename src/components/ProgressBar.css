@@ -24,9 +24,22 @@
 
 .nx-progress-counters {
   display: flex;
+  align-items: center;
   gap: 16px;
   font-size: 13px;
   color: var(--text-muted);
+}
+
+.nx-progress-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.08);
+  padding: 2px 8px;
+  border-radius: 100px;
 }
 
 .nx-progress-pillar {

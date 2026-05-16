@@ -1,0 +1,39 @@
+.pin-modal-box {
+  max-width: 380px;
+}
+
+.pin-form {
+  padding: 24px;
+}
+
+.pin-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.pin-input {
+  font-size: 18px;
+  letter-spacing: 4px;
+  text-align: center;
+}
+
+
+.pin-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(6px); }
+}
+
+.pin-shake {
+  animation: pin-shake 0.45s ease;
+}

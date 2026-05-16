@@ -1,5 +1,5 @@
 const BASE_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-4-6';
 const ANTHROPIC_VERSION = '2023-06-01';
 
 function getApiKey() {
@@ -60,30 +60,6 @@ export async function validateApiKey(key) {
   }
 }
 
-export async function transcribeAudio(audioBase64, mimeType = 'audio/webm') {
-  const text = await callClaude(
-    [{
-      role: 'user',
-      content: [
-        {
-          type: 'text',
-          text: 'Transcreva exatamente o que foi dito neste áudio em português brasileiro. Retorne apenas a transcrição, sem comentários adicionais, sem formatação extra.',
-        },
-        {
-          type: 'document',
-          source: {
-            type: 'base64',
-            media_type: mimeType,
-            data: audioBase64,
-          },
-        },
-      ],
-    }],
-    'Você é um transcritor preciso de áudio. Transcreva fielmente o que ouviu.',
-    500
-  );
-  return text.trim();
-}
 
 export async function analyzePillar(pillar, questionsWithAnswers) {
   const qList = questionsWithAnswers

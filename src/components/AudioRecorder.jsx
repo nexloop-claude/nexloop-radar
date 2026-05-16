@@ -1,106 +1,144 @@
 import { useState, useRef, useEffect } from 'react';
-import { transcribeAudio } from '../utils/claudeApi';
 import './AudioRecorder.css';
 
-export default function AudioRecorder({ onTranscript, existingTranscript }) {
-  const [status, setStatus] = useState('idle'); // idle | requesting | recording | processing | done | error
-  const [elapsed, setElapsed] = useState(0);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [transcript, setTranscript] = useState(existingTranscript || '');
-  const [editMode, setEditMode] = useState(false);
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  const mediaRecorderRef = useRef(null);
-  const chunksRef = useRef([]);
+export default function AudioRecorder({ onTranscript, existingTranscript }) {
+  const [status, setStatus] = useState('idle'); // idle | recording | done | error | unsupported
+  const [finalText, setFinalText] = useState(existingTranscript || '');
+  const [interimText, setInterimText] = useState('');
+  const [elapsed, setElapsed] = useState(0);
+  const [editMode, setEditMode] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const recognitionRef = useRef(null);
   const timerRef = useRef(null);
-  const streamRef = useRef(null);
+  const accumulatedRef = useRef(existingTranscript || '');
 
   useEffect(() => {
-    setTranscript(existingTranscript || '');
+    setFinalText(existingTranscript || '');
+    accumulatedRef.current = existingTranscript || '';
     if (existingTranscript) setStatus('done');
   }, [existingTranscript]);
 
   useEffect(() => {
     return () => {
       clearInterval(timerRef.current);
-      streamRef.current?.getTracks().forEach(t => t.stop());
+      recognitionRef.current?.stop();
     };
   }, []);
 
-  async function startRecording() {
-    setStatus('requesting');
+  function startRecording() {
+    if (!SpeechRecognition) {
+      setStatus('unsupported');
+      return;
+    }
+
+    accumulatedRef.current = '';
+    setFinalText('');
+    setInterimText('');
     setErrorMsg('');
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
 
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/webm')
-        ? 'audio/webm'
-        : 'audio/mp4';
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognitionRef.current = recognition;
 
-      const mr = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = mr;
-      chunksRef.current = [];
-
-      mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      mr.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        clearInterval(timerRef.current);
-        setStatus('processing');
-
-        const blob = new Blob(chunksRef.current, { type: mimeType });
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          try {
-            const base64 = reader.result.split(',')[1];
-            const text = await transcribeAudio(base64, mimeType);
-            setTranscript(text);
-            onTranscript(text);
-            setStatus('done');
-          } catch (err) {
-            setErrorMsg(err.message || 'Erro na transcrição. Você pode digitar a resposta manualmente.');
-            setStatus('error');
-          }
-        };
-        reader.readAsDataURL(blob);
-      };
-
-      mr.start(500);
+    recognition.onstart = () => {
       setStatus('recording');
       setElapsed(0);
       timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
-    } catch (err) {
-      if (err.name === 'NotAllowedError') {
-        setErrorMsg('Permissão de microfone negada. Permita o acesso e tente novamente.');
-      } else {
-        setErrorMsg('Microfone não disponível neste dispositivo.');
+    };
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          accumulatedRef.current += result[0].transcript + ' ';
+        } else {
+          interim += result[0].transcript;
+        }
       }
+      setFinalText(accumulatedRef.current);
+      setInterimText(interim);
+    };
+
+    recognition.onerror = (event) => {
+      clearInterval(timerRef.current);
+      if (event.error === 'not-allowed') {
+        setErrorMsg('Permissão de microfone negada. Permita o acesso nas configurações do navegador.');
+      } else if (event.error === 'no-speech') {
+        // Silence detected — treat as normal stop
+        stopRecording();
+        return;
+      } else if (event.error === 'network') {
+        setErrorMsg('Erro de rede. A transcrição de voz requer conexão com a internet.');
+      } else {
+        setErrorMsg(`Erro no reconhecimento de voz: ${event.error}. Tente digitar a resposta.`);
+      }
+      setStatus('error');
+    };
+
+    recognition.onend = () => {
+      clearInterval(timerRef.current);
+      setInterimText('');
+      const text = accumulatedRef.current.trim();
+      if (text) {
+        setFinalText(text);
+        onTranscript(text);
+        setStatus('done');
+      } else if (status === 'recording') {
+        setStatus('idle');
+      }
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      setErrorMsg('Não foi possível iniciar o microfone.');
       setStatus('error');
     }
   }
 
   function stopRecording() {
-    mediaRecorderRef.current?.stop();
+    clearInterval(timerRef.current);
+    recognitionRef.current?.stop();
+  }
+
+  function reset() {
+    recognitionRef.current?.stop();
+    clearInterval(timerRef.current);
+    accumulatedRef.current = '';
+    setFinalText('');
+    setInterimText('');
+    setElapsed(0);
+    setStatus('idle');
+    setEditMode(false);
+    onTranscript('');
+  }
+
+  function handleEdit(e) {
+    setFinalText(e.target.value);
+    onTranscript(e.target.value);
   }
 
   function formatTime(s) {
     const m = Math.floor(s / 60).toString().padStart(2, '0');
-    const sec = (s % 60).toString().padStart(2, '0');
-    return `${m}:${sec}`;
+    return `${m}:${(s % 60).toString().padStart(2, '0')}`;
   }
 
-  function handleTranscriptChange(e) {
-    setTranscript(e.target.value);
-    onTranscript(e.target.value);
-  }
-
-  function reset() {
-    setStatus('idle');
-    setTranscript('');
-    setElapsed(0);
-    setErrorMsg('');
-    onTranscript('');
+  if (status === 'unsupported') {
+    return (
+      <div className="audio-recorder">
+        <div className="nx-alert nx-alert-warning">
+          🎙️ Reconhecimento de voz não disponível neste navegador.
+          Use <strong>Chrome</strong> ou <strong>Edge</strong> para gravar, ou digite a resposta acima.
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -111,27 +149,21 @@ export default function AudioRecorder({ onTranscript, existingTranscript }) {
         </button>
       )}
 
-      {status === 'requesting' && (
-        <div className="audio-status audio-requesting">
-          <span>⏳ Aguardando permissão do microfone...</span>
-        </div>
-      )}
-
       {status === 'recording' && (
         <div className="audio-recording-wrap">
           <div className="audio-rec-indicator nx-pulse">⏺</div>
           <span className="audio-timer">{formatTime(elapsed)}</span>
-          <span className="audio-recording-label">Gravando...</span>
+          <span className="audio-recording-label">Gravando... fale claramente</span>
           <button className="btn btn-danger btn-sm" onClick={stopRecording}>
             ⏹ Parar
           </button>
         </div>
       )}
 
-      {status === 'processing' && (
-        <div className="audio-status">
-          <div className="nx-spinner" style={{ width: 24, height: 24, borderWidth: 2 }} />
-          <span>Transcrevendo com IA...</span>
+      {status === 'recording' && (finalText || interimText) && (
+        <div className="audio-interim-box">
+          <span className="audio-interim-final">{finalText}</span>
+          <span className="audio-interim-text">{interimText}</span>
         </div>
       )}
 
@@ -151,12 +183,12 @@ export default function AudioRecorder({ onTranscript, existingTranscript }) {
           {editMode ? (
             <textarea
               className="nx-textarea audio-transcript-edit"
-              value={transcript}
-              onChange={handleTranscriptChange}
+              value={finalText}
+              onChange={handleEdit}
               rows={4}
             />
           ) : (
-            <p className="audio-transcript-text">{transcript}</p>
+            <p className="audio-transcript-text">{finalText}</p>
           )}
         </div>
       )}

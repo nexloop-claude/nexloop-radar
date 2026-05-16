@@ -16,6 +16,26 @@
   margin: 0 auto;
 }
 
+.setup-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.2s;
+}
+.setup-back-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
 .setup-badge {
   margin-bottom: 20px;
   font-size: 12px;

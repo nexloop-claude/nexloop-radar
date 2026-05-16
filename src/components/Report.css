@@ -31,6 +31,21 @@
   gap: 10px;
 }
 
+.report-pdf-progress {
+  height: 3px;
+  background: #E4E4E4;
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.report-pdf-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #18B8FF, #DB05FF);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
 /* ========== DOCUMENT ========== */
 .report-document {
   max-width: 860px;
@@ -556,11 +571,39 @@
   }
 }
 
+/* ========== LOGO ========== */
+.report-logo-img {
+  max-height: 56px;
+  max-width: 220px;
+  object-fit: contain;
+}
+
+.report-footer-logo-img {
+  max-height: 28px;
+  max-width: 120px;
+  object-fit: contain;
+}
+
 /* ========== PRINT ========== */
 @media print {
   .report-actions,
-  .report-bottom-actions {
+  .report-bottom-actions,
+  .no-print {
     display: none !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    margin: 15mm 12mm;
+    size: A4;
+  }
+
+  body {
+    background: #fff !important;
   }
 
   .report-root {
@@ -572,24 +615,62 @@
     max-width: 100%;
   }
 
-  .report-section {
+  /* Cabeçalho nunca quebra no meio */
+  .report-header {
+    break-inside: avoid;
     page-break-inside: avoid;
   }
 
+  /* Cada seção: tenta ficar inteira, mas permite quebra antes */
+  .report-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Rodapé SEMPRE junto ao conteúdo anterior — nunca página solo */
+  .report-footer {
+    break-before: avoid !important;
+    page-break-before: avoid !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Cards individuais não quebram */
+  .report-card,
+  .report-pillar-card,
+  .report-rec-card,
+  .report-roadmap-phase {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Grade de pilares: 2 colunas no PDF */
   .report-pillars-grid {
     grid-template-columns: 1fr 1fr;
   }
 
+  /* Roadmap: 3 colunas no PDF */
   .report-roadmap {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .report-header {
-    page-break-after: avoid;
+  /* Reduzir padding das seções para caber mais conteúdo por página */
+  .report-section {
+    padding: 20px 36px;
   }
 
-  body {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  .report-header {
+    padding: 28px 36px 20px;
+  }
+
+  .report-footer {
+    padding: 16px 36px;
+  }
+
+  /* Evitar página em branco no final */
+  .report-document > *:last-child {
+    page-break-after: avoid;
   }
 }

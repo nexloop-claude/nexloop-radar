@@ -105,6 +105,27 @@
   font-size: 14px;
 }
 
+.audio-interim-box {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(24,184,255,0.06);
+  border: 1px solid rgba(24,184,255,0.2);
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 48px;
+  color: var(--text-primary);
+}
+
+.audio-interim-final {
+  color: var(--text-primary);
+}
+
+.audio-interim-text {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 .audio-error {
   display: flex;
   flex-direction: column;

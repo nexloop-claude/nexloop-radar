@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import RadarChart from './RadarChart';
 import { getMaturityLevel } from '../data/pillars';
+import { getStoredLogo } from './ApiKeyModal';
+import { generatePDF, reportFilename } from '../utils/generatePDF';
 import './Report.css';
 
 const IMPACT_COLORS = {
@@ -14,7 +17,15 @@ const TIMEFRAME_COLORS = {
   '12-24 meses': '#510B61',
 };
 
-export default function Report({ companyInfo, pillarResults, reportData, onReset }) {
+const TYPE_LABELS = {
+  digital:  'Assessment de Maturidade Digital',
+  business: 'Assessment de Negócio',
+};
+
+export default function Report({ companyInfo, pillarResults, reportData, onReset, onHistory }) {
+  const [pdfProgress, setPdfProgress] = useState(0);
+  const [pdfLoading, setPdfLoading]   = useState(false);
+
   const overallScore = Math.round(
     pillarResults.reduce((s, p) => s + p.score, 0) / pillarResults.length
   );
@@ -22,29 +33,61 @@ export default function Report({ companyInfo, pillarResults, reportData, onReset
   const dateStr = new Date().toLocaleDateString('pt-BR', {
     day: '2-digit', month: 'long', year: 'numeric'
   });
+  const logo = getStoredLogo();
+  const reportTitle = TYPE_LABELS[companyInfo.assessmentType] || 'Assessment de Maturidade Digital';
 
   const sortedPillars = [...pillarResults].sort((a, b) => b.score - a.score);
 
+  async function handleGeneratePDF() {
+    setPdfLoading(true);
+    setPdfProgress(0);
+    try {
+      await generatePDF('report-document', reportFilename(companyInfo), (p) => setPdfProgress(p));
+    } catch (e) {
+      console.error('PDF generation failed:', e);
+      alert('Erro ao gerar PDF. Tente novamente.');
+    } finally {
+      setPdfLoading(false);
+      setPdfProgress(0);
+    }
+  }
+
   return (
     <div className="report-root">
-      {/* Action buttons (no print) */}
+      {/* Sticky action bar */}
       <div className="report-actions no-print">
         <div className="nx-container-wide">
           <div className="report-actions-inner">
             <span className="report-actions-label">Relatório gerado com sucesso!</span>
             <div className="report-actions-btns">
-              <button className="btn btn-secondary" onClick={() => window.print()}>
-                🖨️ Imprimir / Salvar PDF
+              {onHistory && (
+                <button className="btn btn-sm btn-secondary" onClick={onHistory}>
+                  ← Histórico
+                </button>
+              )}
+              <button
+                className="btn btn-secondary"
+                onClick={handleGeneratePDF}
+                disabled={pdfLoading}
+              >
+                {pdfLoading
+                  ? `Gerando PDF… ${pdfProgress}%`
+                  : '⬇ Baixar PDF'}
               </button>
               <button className="btn btn-primary" onClick={onReset}>
                 ↩ Novo Assessment
               </button>
             </div>
           </div>
+          {pdfLoading && (
+            <div className="report-pdf-progress">
+              <div className="report-pdf-progress-fill" style={{ width: `${pdfProgress}%` }} />
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="report-document">
+      <div className="report-document" id="report-document">
         {/* TOP LINE */}
         <div className="report-topline" />
 
@@ -52,10 +95,17 @@ export default function Report({ companyInfo, pillarResults, reportData, onReset
         <div className="report-header">
           <div className="report-confidential">CONFIDENCIAL</div>
           <div className="report-brand">
-            <span className="report-logo-nexloop">NEXLOOP</span>
-            <span className="report-logo-radar">RADAR</span>
+            {logo
+              ? <img src={logo} alt="Logo" className="report-logo-img" />
+              : (
+                <>
+                  <span className="report-logo-nexloop">NEXLOOP</span>
+                  <span className="report-logo-radar">RADAR</span>
+                </>
+              )
+            }
           </div>
-          <h1 className="report-title">Assessment de Maturidade Digital</h1>
+          <h1 className="report-title">{reportTitle}</h1>
           <div className="report-meta">
             <span className="report-company">{companyInfo.company}</span>
             <span className="report-dot">·</span>
@@ -224,7 +274,7 @@ export default function Report({ companyInfo, pillarResults, reportData, onReset
                         <div>
                           <strong>{item.action}</strong>
                           {item.description && <p>{item.description}</p>}
-                          {item.owner && <span className="report-roadmap-owner">👤 {item.owner}</span>}
+                          {item.owner && <span className="report-roadmap-owner">Resp: {item.owner}</span>}
                         </div>
                       </li>
                     ))}
@@ -238,11 +288,14 @@ export default function Report({ companyInfo, pillarResults, reportData, onReset
         {/* FOOTER */}
         <footer className="report-footer">
           <div className="report-footer-brand">
-            <span className="report-logo-nexloop" style={{ fontSize: 14 }}>NEXLOOP</span>
+            {logo
+              ? <img src={logo} alt="Logo" className="report-footer-logo-img" />
+              : <span className="report-logo-nexloop" style={{ fontSize: 14 }}>NEXLOOP</span>
+            }
             <span style={{ color: '#888' }}>· Empowering Your Business · nexloop.tech</span>
           </div>
           <p className="report-footer-note">
-            Este relatório foi gerado com suporte de Inteligência Artificial (Anthropic Claude) · {dateStr}
+            Gerado com suporte de Inteligência Artificial (Anthropic Claude) · {dateStr}
           </p>
         </footer>
       </div>
@@ -251,8 +304,12 @@ export default function Report({ companyInfo, pillarResults, reportData, onReset
       <div className="report-bottom-actions no-print">
         <div className="nx-container">
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', padding: '32px 0' }}>
-            <button className="btn btn-secondary btn-lg" onClick={() => window.print()}>
-              🖨️ Imprimir / Salvar PDF
+            <button
+              className="btn btn-secondary btn-lg"
+              onClick={handleGeneratePDF}
+              disabled={pdfLoading}
+            >
+              {pdfLoading ? `Gerando PDF… ${pdfProgress}%` : '⬇ Baixar PDF'}
             </button>
             <button className="btn btn-primary btn-lg" onClick={onReset}>
               ↩ Novo Assessment

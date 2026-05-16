@@ -1,10 +1,21 @@
 import { useState } from 'react';
-import ApiKeyModal from './ApiKeyModal';
+import ApiKeyModal, { getStoredLogo } from './ApiKeyModal';
+import AdminPinModal from './AdminPinModal';
 import './Header.css';
 
-export default function Header({ subtitle, pillarInfo, onReset }) {
-  const [showModal, setShowModal] = useState(false);
-  const hasKey = !!localStorage.getItem('nexloop_api_key');
+export default function Header({ subtitle, pillarInfo, onReset, onHistory }) {
+  const [showPin, setShowPin]   = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
+  const logo = getStoredLogo();
+
+  function handleConfigClick() {
+    setShowPin(true);
+  }
+
+  function handlePinSuccess() {
+    setShowPin(false);
+    setShowConfig(true);
+  }
 
   return (
     <>
@@ -12,8 +23,15 @@ export default function Header({ subtitle, pillarInfo, onReset }) {
       <header className="nx-header">
         <div className="nx-header-inner nx-container-wide">
           <div className="nx-logo" onClick={onReset} style={{ cursor: onReset ? 'pointer' : 'default' }}>
-            <span className="nx-logo-nexloop">NEXLOOP</span>
-            <span className="nx-logo-radar">RADAR</span>
+            {logo
+              ? <img src={logo} alt="Logo" className="nx-logo-img" />
+              : (
+                <>
+                  <span className="nx-logo-nexloop">NEXLOOP</span>
+                  <span className="nx-logo-radar">RADAR</span>
+                </>
+              )
+            }
           </div>
 
           <div className="nx-header-center">
@@ -26,18 +44,28 @@ export default function Header({ subtitle, pillarInfo, onReset }) {
           </div>
 
           <div className="nx-header-actions">
+            {onHistory && (
+              <button
+                className="btn btn-sm btn-secondary"
+                onClick={onHistory}
+                title="Repositório de relatórios"
+              >
+                Histórico
+              </button>
+            )}
             <button
-              className={`btn btn-sm ${hasKey ? 'btn-secondary' : 'btn-outline'}`}
-              onClick={() => setShowModal(true)}
-              title="Configurar API Key"
+              className="btn btn-sm btn-secondary"
+              onClick={handleConfigClick}
+              title="Acesso administrativo"
             >
-              {hasKey ? '⚙️ Config.' : '🔑 API Key'}
+              ⚙️
             </button>
           </div>
         </div>
       </header>
 
-      {showModal && <ApiKeyModal onClose={() => setShowModal(false)} />}
+      {showPin    && <AdminPinModal onSuccess={handlePinSuccess} onClose={() => setShowPin(false)} />}
+      {showConfig && <ApiKeyModal onClose={() => setShowConfig(false)} />}
     </>
   );
 }

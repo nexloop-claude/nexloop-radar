@@ -60,6 +60,7 @@ export default function QuestionCard({
         </div>
 
         <AudioRecorder
+          key={question.id}
           onTranscript={handleTranscript}
           existingTranscript={audioTranscript}
         />

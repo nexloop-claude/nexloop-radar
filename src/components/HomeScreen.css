@@ -1,0 +1,236 @@
+.home-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #FAFAFA;
+}
+
+/* ══════════════════════════════════════
+   HERO
+══════════════════════════════════════ */
+.home-hero {
+  background: #fff;
+  border-bottom: 1px solid #EAEAEA;
+  padding: 72px 0 64px;
+}
+
+.home-hero-inner {
+  max-width: 640px;
+}
+
+.home-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.home-heading {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  color: var(--nx-preto);
+  margin-bottom: 18px;
+}
+
+.home-lead {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 520px;
+}
+
+/* ══════════════════════════════════════
+   CARDS SECTION
+══════════════════════════════════════ */
+.home-cards-section {
+  flex: 1;
+  padding: 56px 0 64px;
+}
+
+.home-cards-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 920px;
+}
+
+/* ══════════════════════════════════════
+   CARD
+══════════════════════════════════════ */
+.home-card {
+  background: #fff;
+  border: 1px solid #E4E4E4;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+  border-color: #D0D0D0;
+  transform: translateY(-3px);
+}
+
+/* Top accent stripe */
+.home-card-accent {
+  height: 3px;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.home-card-content {
+  padding: 32px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  flex: 1;
+}
+
+/* ── Card header (icon + tag) ── */
+.home-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 12px;
+}
+
+.home-icon-svg {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.home-card-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 100px;
+  white-space: nowrap;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* ── Card body ── */
+.home-card-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--nx-preto);
+  line-height: 1.25;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.home-card-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 20px;
+}
+
+.home-card-divider {
+  height: 1px;
+  background: #F0F0F0;
+  margin-bottom: 16px;
+}
+
+.home-card-audience {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+/* ── Pillar list ── */
+.home-pillar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.home-pillar-list li {
+  font-size: 13px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+.home-pillar-marker {
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* ── CTA button ── */
+.home-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-family: var(--nx-font);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  border: 2px solid var(--cta-color, #18B8FF);
+  color: var(--cta-color, #18B8FF);
+  background: transparent;
+  transition: all 0.18s ease;
+  width: fit-content;
+}
+
+.home-card-cta:hover {
+  background: var(--cta-color, #18B8FF);
+  color: #fff;
+}
+
+.home-card-cta svg {
+  transition: transform 0.18s ease;
+}
+
+.home-card-cta:hover svg {
+  transform: translateX(3px);
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 720px) {
+  .home-cards-inner {
+    grid-template-columns: 1fr;
+  }
+  .home-heading {
+    font-size: 34px;
+    letter-spacing: -1px;
+  }
+  .home-hero {
+    padding: 48px 0 40px;
+  }
+  .home-cards-section {
+    padding: 32px 0 40px;
+  }
+  .home-card-content {
+    padding: 24px 24px 20px;
+  }
+}

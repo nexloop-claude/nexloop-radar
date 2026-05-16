@@ -1,22 +1,34 @@
+import { useState } from 'react';
 import { useAssessment } from './hooks/useAssessment';
-import { getMaturityLevel, calculatePillarScore } from './data/pillars';
+import { PILLARS, getMaturityLevel, calculatePillarScore } from './data/pillars';
+import { BUSINESS_PILLARS } from './data/businessPillars';
 import { analyzePillar, generateReport } from './utils/claudeApi';
 
 import Header from './components/Header';
+import HomeScreen from './components/HomeScreen';
+import ResumeScreen from './components/ResumeScreen';
 import SetupScreen from './components/SetupScreen';
 import ProgressBar from './components/ProgressBar';
 import QuestionCard from './components/QuestionCard';
 import AnalysisScreen from './components/AnalysisScreen';
 import Report from './components/Report';
+import HistoryScreen from './components/HistoryScreen';
 import './App.css';
 
 export default function App() {
+  const [resumeDismissed, setResumeDismissed] = useState(false);
+  // 'none' | 'list' | 'detail'
+  const [historyView, setHistoryView]   = useState('none');
+  const [historyEntry, setHistoryEntry] = useState(null);
+
   const {
     state,
+    update,
     setAnswer,
     getAnswer,
     selectedPillars,
     currentPillar,
+    lastSavedAt,
     startAssessment,
     goToNextQuestion,
     goToPrevQuestion,
@@ -25,11 +37,45 @@ export default function App() {
     setAnalysisProgress,
     finishAssessment,
     resetAssessment,
-    hasSavedAssessment,
+    getSavedMeta,
     resumeAssessment,
   } = useAssessment();
 
-  const { step, companyInfo, currentPillarIndex, currentQuestionIndex, answers, analysisProgress, analysisStatus } = state;
+  const { step, companyInfo, assessmentType, currentPillarIndex, currentQuestionIndex, answers, analysisProgress, analysisStatus } = state;
+
+  const availablePillars = assessmentType === 'business' ? BUSINESS_PILLARS : PILLARS;
+
+  function handleReset() {
+    resetAssessment();
+    setResumeDismissed(false);
+    setHistoryView('none');
+    setHistoryEntry(null);
+  }
+
+  function handleSelectType(type) {
+    update({ assessmentType: type, step: 'setup' });
+    setResumeDismissed(true);
+  }
+
+  function handleResume() {
+    resumeAssessment();
+    setResumeDismissed(true);
+  }
+
+  function handleDiscard() {
+    resetAssessment();
+    setResumeDismissed(true);
+  }
+
+  function openHistory() {
+    setHistoryView('list');
+    setHistoryEntry(null);
+  }
+
+  function viewHistoryReport(entry) {
+    setHistoryEntry(entry);
+    setHistoryView('detail');
+  }
 
   async function runAnalysis() {
     startAnalysis();
@@ -108,43 +154,96 @@ export default function App() {
     try {
       reportData = await generateReport(companyInfo, pillarResults);
     } catch {
-      // Finalize without report data if generation fails
+      // Finaliza sem dados de relatório se a geração falhar
     }
 
     setAnalysisProgress(100, { label: 'Relatório concluído!', done: true });
-
     await new Promise(r => setTimeout(r, 600));
     finishAssessment(pillarResults, reportData);
   }
 
-  function handleFinishQuestionnaire() {
-    runAnalysis();
-  }
-
-  if (step === 'setup') {
+  // ── HISTORY — detail view ────────────────────────────────
+  if (historyView === 'detail' && historyEntry) {
     return (
       <div className="nx-page">
-        <Header />
-        <SetupScreen
-          onStart={startAssessment}
-          hasSaved={hasSavedAssessment()}
-          onResume={resumeAssessment}
+        <div className="nx-topline" />
+        <Header onHistory={openHistory} />
+        <Report
+          companyInfo={historyEntry.companyInfo}
+          pillarResults={historyEntry.pillarResults}
+          reportData={historyEntry.reportData}
+          onReset={handleReset}
+          onHistory={() => setHistoryView('list')}
         />
-        <footer className="nx-footer">
-          <strong>Nexloop</strong> · Empowering Your Business
-        </footer>
       </div>
     );
   }
 
-  if (step === 'questionnaire' && currentPillar) {
-    const questions = currentPillar.questions;
-    const question = questions[currentQuestionIndex];
-    const totalQInPillar = questions.length;
-    const qNumber = currentQuestionIndex + 1;
-    const isFirst = currentPillarIndex === 0 && currentQuestionIndex === 0;
-    const isLast = isLastQuestion();
+  // ── HISTORY — list ────────────────────────────────────────
+  if (historyView === 'list') {
+    return (
+      <div className="nx-page">
+        <div className="nx-topline" />
+        <Header onHistory={openHistory} />
+        <HistoryScreen
+          onViewReport={viewHistoryReport}
+          onClose={() => setHistoryView('none')}
+        />
+      </div>
+    );
+  }
 
+  // ── RESUME PROMPT ────────────────────────────────────────
+  if (!resumeDismissed && step === 'setup' && !assessmentType) {
+    const savedMeta = getSavedMeta();
+    if (savedMeta) {
+      return (
+        <div className="nx-page">
+          <div className="nx-topline" />
+          <Header onHistory={openHistory} />
+          <ResumeScreen
+            meta={savedMeta}
+            onResume={handleResume}
+            onDiscard={handleDiscard}
+          />
+        </div>
+      );
+    }
+  }
+
+  // ── HOME ────────────────────────────────────────────────
+  if (step === 'setup' && !assessmentType) {
+    return (
+      <div className="nx-page">
+        <div className="nx-topline" />
+        <Header onHistory={openHistory} />
+        <HomeScreen onSelect={handleSelectType} />
+      </div>
+    );
+  }
+
+  // ── SETUP ───────────────────────────────────────────────
+  if (step === 'setup' && assessmentType) {
+    return (
+      <div className="nx-page">
+        <Header onHistory={openHistory} />
+        <SetupScreen
+          pillars={availablePillars}
+          assessmentType={assessmentType}
+          onStart={startAssessment}
+          onBack={() => update({ assessmentType: null })}
+        />
+      </div>
+    );
+  }
+
+  // ── QUESTIONNAIRE ────────────────────────────────────────
+  if (step === 'questionnaire' && currentPillar) {
+    const questions  = currentPillar.questions;
+    const question   = questions[currentQuestionIndex];
+    const qNumber    = currentQuestionIndex + 1;
+    const isFirst    = currentPillarIndex === 0 && currentQuestionIndex === 0;
+    const isLast     = isLastQuestion();
     const pillarInfo = `${currentPillar.icon} ${currentPillar.name} · Pilar ${currentPillarIndex + 1} de ${selectedPillars.length}`;
 
     return (
@@ -152,27 +251,28 @@ export default function App() {
         <Header
           pillarInfo={pillarInfo}
           onReset={() => {
-            if (window.confirm('Cancelar o assessment? O progresso será salvo localmente.')) {
-              resetAssessment();
+            if (window.confirm('Cancelar o assessment? O progresso foi salvo localmente e pode ser retomado.')) {
+              handleReset();
             }
           }}
         />
         <ProgressBar
           current={qNumber}
-          total={totalQInPillar}
+          total={questions.length}
           pillarIndex={currentPillarIndex}
           totalPillars={selectedPillars.length}
           pillarName={currentPillar.name}
+          lastSavedAt={lastSavedAt}
         />
         <div className="nx-container app-question-wrap">
           <QuestionCard
             question={question}
             questionNumber={qNumber}
-            totalQuestions={totalQInPillar}
+            totalQuestions={questions.length}
             pillar={currentPillar}
             answer={getAnswer(question.id)}
             onAnswerChange={ans => setAnswer(question.id, ans)}
-            onNext={isLast ? handleFinishQuestionnaire : goToNextQuestion}
+            onNext={isLast ? runAnalysis : goToNextQuestion}
             onPrev={goToPrevQuestion}
             isFirst={isFirst}
             isLast={isLast}
@@ -185,6 +285,7 @@ export default function App() {
     );
   }
 
+  // ── ANALYZING ────────────────────────────────────────────
   if (step === 'analyzing') {
     return (
       <div className="nx-page">
@@ -197,14 +298,17 @@ export default function App() {
     );
   }
 
+  // ── REPORT ───────────────────────────────────────────────
   if (step === 'report') {
     return (
       <div className="nx-page">
+        <Header onHistory={openHistory} />
         <Report
           companyInfo={companyInfo}
           pillarResults={state.pillarResults}
           reportData={state.reportData}
-          onReset={resetAssessment}
+          onReset={handleReset}
+          onHistory={openHistory}
         />
       </div>
     );
