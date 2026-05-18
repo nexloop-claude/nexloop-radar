@@ -17,21 +17,10 @@ import HistoryScreen from './components/HistoryScreen';
 import './App.css';
 
 export default function App() {
+  // ── All hooks must be at the top — no conditional calls ──────────
   const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
-
-  // ── AUTH GATE ────────────────────────────────────────────────────
-  if (!authenticated) {
-    return <LoginScreen onLogin={() => setAuthenticated(true)} />;
-  }
-
-  function handleLogout() {
-    logout();
-    setAuthenticated(false);
-  }
-
-  // 'none' | 'list' | 'detail'
-  const [historyView, setHistoryView] = useState('none');
-  const [historyEntry, setHistoryEntry] = useState(null);
+  const [historyView, setHistoryView]     = useState('none');
+  const [historyEntry, setHistoryEntry]   = useState(null);
 
   const {
     state,
@@ -57,6 +46,16 @@ export default function App() {
   const { step, companyInfo, assessmentType, currentPillarIndex, currentQuestionIndex, answers, analysisProgress, analysisStatus } = state;
 
   const availablePillars = assessmentType === 'business' ? BUSINESS_PILLARS : PILLARS;
+
+  // ── AUTH GATE ────────────────────────────────────────────────────
+  if (!authenticated) {
+    return <LoginScreen onLogin={() => setAuthenticated(true)} />;
+  }
+
+  function handleLogout() {
+    logout();
+    setAuthenticated(false);
+  }
 
   function handleReset() {
     resetAssessment();
