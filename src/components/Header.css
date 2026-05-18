@@ -68,6 +68,29 @@
 
 .nx-header-actions {
   flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nx-header-history-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nx-header-draft-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 9px;
+  background: var(--nx-azul);
+  color: #fff;
 }
 
 @media (max-width: 480px) {

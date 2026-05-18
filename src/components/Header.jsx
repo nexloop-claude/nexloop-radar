@@ -3,7 +3,7 @@ import ApiKeyModal, { getStoredLogo } from './ApiKeyModal';
 import AdminPinModal from './AdminPinModal';
 import './Header.css';
 
-export default function Header({ subtitle, pillarInfo, onReset, onHistory }) {
+export default function Header({ subtitle, pillarInfo, onReset, onHistory, draftCount = 0 }) {
   const [showPin, setShowPin]   = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const logo = getStoredLogo();
@@ -46,11 +46,14 @@ export default function Header({ subtitle, pillarInfo, onReset, onHistory }) {
           <div className="nx-header-actions">
             {onHistory && (
               <button
-                className="btn btn-sm btn-secondary"
+                className="btn btn-sm btn-secondary nx-header-history-btn"
                 onClick={onHistory}
-                title="Repositório de relatórios"
+                title="Ver assessments em andamento e concluídos"
               >
-                Histórico
+                Assessments
+                {draftCount > 0 && (
+                  <span className="nx-header-draft-badge">{draftCount}</span>
+                )}
               </button>
             )}
             <button

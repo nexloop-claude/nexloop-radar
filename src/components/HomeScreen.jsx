@@ -120,9 +120,22 @@ const ASSESSMENTS = [
   },
 ];
 
-export default function HomeScreen({ onSelect }) {
+export default function HomeScreen({ onSelect, draftCount = 0, onOpenHistory }) {
   return (
     <div className="home-page">
+
+      {/* ── BANNER: assessments em andamento ── */}
+      {draftCount > 0 && (
+        <div className="home-draft-banner">
+          <span className="home-draft-banner-icon">⏳</span>
+          <span>
+            Você tem <strong>{draftCount} {draftCount === 1 ? 'assessment' : 'assessments'} em andamento</strong>.
+          </span>
+          <button className="home-draft-banner-btn" onClick={onOpenHistory}>
+            Ver e retomar →
+          </button>
+        </div>
+      )}
 
       {/* ── HERO ── */}
       <section className="home-hero">

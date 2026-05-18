@@ -5,6 +5,40 @@
   background: #FAFAFA;
 }
 
+/* ── Draft banner ── */
+.home-draft-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: #EFF9FF;
+  border-bottom: 1px solid #BAE6FD;
+  font-size: 14px;
+  color: #0e4f6e;
+  flex-wrap: wrap;
+}
+
+.home-draft-banner-icon {
+  font-size: 16px;
+}
+
+.home-draft-banner-btn {
+  margin-left: auto;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nx-azul);
+  background: #fff;
+  border: 1px solid var(--nx-azul);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.home-draft-banner-btn:hover {
+  background: #EFF9FF;
+}
+
 /* ══════════════════════════════════════
    HERO
 ══════════════════════════════════════ */

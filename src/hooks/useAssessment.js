@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { PILLARS } from '../data/pillars';
 import { BUSINESS_PILLARS } from '../data/businessPillars';
 
-const STORAGE_KEY = 'nexloop_current_assessment';
+const DRAFTS_KEY  = 'nexloop_drafts';
 const HISTORY_KEY = 'nexloop_history';
+const LEGACY_KEY  = 'nexloop_current_assessment'; // migration from single-draft format
 
 const initialState = {
   step: 'setup',
-  assessmentType: null,           // 'digital' | 'business' — persisted
+  draftId: null,
+  assessmentType: null,
   companyInfo: {
     company: '',
     responsible: '',
@@ -17,38 +19,60 @@ const initialState = {
   selectedPillarIds: [],
   currentPillarIndex: 0,
   currentQuestionIndex: 0,
-  answers: {},                    // { questionId: { text, audioTranscript } }
+  answers: {},
   pillarResults: [],
   reportData: null,
   analysisProgress: 0,
   analysisStatus: [],
-  lastSavedAt: null,              // timestamp visível na UI
 };
 
-// ── Persistence helpers ───────────────────────────────────────────
+// ── Draft persistence ─────────────────────────────────────────────
 
-function loadSaved() {
+function readDrafts() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    // Ignore stale setup states
-    if (!parsed.step || parsed.step === 'setup') return null;
-    return parsed;
+    const raw = localStorage.getItem(DRAFTS_KEY);
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return null;
+    return [];
   }
 }
 
-function persist(state) {
+function writeDrafts(drafts) {
   try {
-    const payload = { ...state, lastSavedAt: Date.now() };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    return payload.lastSavedAt;
-  } catch {
-    return null;
-  }
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
+  } catch { /* ignore */ }
 }
+
+function migrateLegacyDraft() {
+  try {
+    const legacyRaw = localStorage.getItem(LEGACY_KEY);
+    if (!legacyRaw) return;
+    const legacy = JSON.parse(legacyRaw);
+    if (legacy?.step && legacy.step !== 'setup' && legacy.step !== 'report') {
+      const drafts = readDrafts();
+      const legacyId = `draft_${legacy.lastSavedAt || Date.now()}`;
+      if (!drafts.find(d => d.id === legacyId)) {
+        drafts.push({ ...legacy, id: legacyId, createdAt: legacy.lastSavedAt || Date.now() });
+        writeDrafts(drafts);
+      }
+    }
+  } catch { /* ignore */ }
+  localStorage.removeItem(LEGACY_KEY);
+}
+
+function upsertDraft(draft) {
+  const drafts = readDrafts();
+  const idx = drafts.findIndex(d => d.id === draft.id);
+  if (idx >= 0) drafts[idx] = draft;
+  else drafts.push(draft);
+  writeDrafts(drafts);
+}
+
+function eraseDraft(id) {
+  writeDrafts(readDrafts().filter(d => d.id !== id));
+}
+
+// ── History persistence ───────────────────────────────────────────
 
 function saveToHistory(state) {
   try {
@@ -62,49 +86,49 @@ function saveToHistory(state) {
       reportData: state.reportData,
       timestamp: Date.now(),
     });
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 10)));
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 20)));
   } catch { /* ignore */ }
 }
 
 // ── Hook ─────────────────────────────────────────────────────────
 
 export function useAssessment() {
-  const [state, setState] = useState(() => loadSaved() || { ...initialState });
+  const [state, setState] = useState(() => {
+    migrateLegacyDraft();
+    return { ...initialState };
+  });
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const stateRef = useRef(state);
 
-  // Keep ref in sync for beforeunload
   useEffect(() => { stateRef.current = state; }, [state]);
 
-  // Auto-save on every state change (except setup/report)
+  // Auto-save active draft on every relevant state change
   useEffect(() => {
-    if (state.step === 'questionnaire' || state.step === 'analyzing') {
-      const ts = persist(state);
-      if (ts) setLastSavedAt(ts);
+    if ((state.step === 'questionnaire' || state.step === 'analyzing') && state.draftId) {
+      const ts = Date.now();
+      upsertDraft({ ...state, lastSavedAt: ts });
+      setLastSavedAt(ts);
     }
   }, [state]);
 
-  // Safety save on tab close / page navigation
+  // Safety save on tab close
   useEffect(() => {
     function handleBeforeUnload() {
       const s = stateRef.current;
-      if (s.step === 'questionnaire' || s.step === 'analyzing') {
-        persist(s);
+      if ((s.step === 'questionnaire' || s.step === 'analyzing') && s.draftId) {
+        upsertDraft({ ...s, lastSavedAt: Date.now() });
       }
     }
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // ── Pillar resolution (uses correct list based on type) ─────────
   const allPillars = state.assessmentType === 'business' ? BUSINESS_PILLARS : PILLARS;
   const selectedPillars = allPillars.filter(p => state.selectedPillarIds.includes(p.id));
   const currentPillar = selectedPillars[state.currentPillarIndex] || null;
 
-  const totalQuestions   = selectedPillars.reduce((sum, p) => sum + p.questions.length, 0);
+  const totalQuestions    = selectedPillars.reduce((sum, p) => sum + p.questions.length, 0);
   const answeredQuestions = Object.values(state.answers).filter(a => a.text?.trim()).length;
-
-  // ── Callbacks ────────────────────────────────────────────────────
 
   const update = useCallback((patch) => {
     setState(prev => ({ ...prev, ...patch }));
@@ -125,22 +149,18 @@ export function useAssessment() {
   }, [state.answers]);
 
   function startAssessment(companyInfo, selectedPillarIds) {
+    const draftId = `draft_${Date.now()}`;
     const newState = {
       ...initialState,
+      draftId,
       step: 'questionnaire',
       assessmentType: companyInfo.assessmentType || 'digital',
       companyInfo,
       selectedPillarIds,
-      answers: {},
-      pillarResults: [],
-      reportData: null,
-      analysisProgress: 0,
-      analysisStatus: [],
-      currentPillarIndex: 0,
-      currentQuestionIndex: 0,
+      createdAt: Date.now(),
     };
     setState(newState);
-    persist(newState);
+    upsertDraft(newState);
   }
 
   function goToNextQuestion() {
@@ -191,35 +211,31 @@ export function useAssessment() {
     setState(prev => {
       const next = { ...prev, step: 'report', pillarResults, reportData };
       saveToHistory(next);
+      if (prev.draftId) eraseDraft(prev.draftId);
       return next;
     });
-    localStorage.removeItem(STORAGE_KEY);
   }
 
   function resetAssessment() {
-    localStorage.removeItem(STORAGE_KEY);
-    setState({ ...initialState, companyInfo: { ...initialState.companyInfo, date: new Date().toISOString().split('T')[0] } });
+    if (state.draftId) eraseDraft(state.draftId);
+    setState({
+      ...initialState,
+      companyInfo: { ...initialState.companyInfo, date: new Date().toISOString().split('T')[0] },
+    });
     setLastSavedAt(null);
   }
 
-  // Returns saved-assessment metadata for the resume screen (does not modify state)
-  function getSavedMeta() {
-    const saved = loadSaved();
-    if (!saved) return null;
-    const answered = Object.values(saved.answers || {}).filter(a => a.text?.trim()).length;
-    return {
-      company: saved.companyInfo?.company || 'Assessment',
-      assessmentType: saved.assessmentType,
-      answered,
-      lastSavedAt: saved.lastSavedAt,
-      currentPillarIndex: saved.currentPillarIndex || 0,
-      totalPillars: (saved.selectedPillarIds || []).length,
-    };
+  function resumeAssessment(draft) {
+    setState(draft);
+    setLastSavedAt(draft.lastSavedAt || null);
   }
 
-  function resumeAssessment() {
-    const saved = loadSaved();
-    if (saved) setState(saved);
+  function listDrafts() {
+    return readDrafts().filter(d => d.step && d.step !== 'setup' && d.step !== 'report');
+  }
+
+  function deleteDraftById(id) {
+    eraseDraft(id);
   }
 
   return {
@@ -240,7 +256,8 @@ export function useAssessment() {
     setAnalysisProgress,
     finishAssessment,
     resetAssessment,
-    getSavedMeta,
     resumeAssessment,
+    listDrafts,
+    deleteDraftById,
   };
 }

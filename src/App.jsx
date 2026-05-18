@@ -6,7 +6,6 @@ import { analyzePillar, generateReport } from './utils/claudeApi';
 
 import Header from './components/Header';
 import HomeScreen from './components/HomeScreen';
-import ResumeScreen from './components/ResumeScreen';
 import SetupScreen from './components/SetupScreen';
 import ProgressBar from './components/ProgressBar';
 import QuestionCard from './components/QuestionCard';
@@ -16,9 +15,8 @@ import HistoryScreen from './components/HistoryScreen';
 import './App.css';
 
 export default function App() {
-  const [resumeDismissed, setResumeDismissed] = useState(false);
   // 'none' | 'list' | 'detail'
-  const [historyView, setHistoryView]   = useState('none');
+  const [historyView, setHistoryView] = useState('none');
   const [historyEntry, setHistoryEntry] = useState(null);
 
   const {
@@ -37,8 +35,9 @@ export default function App() {
     setAnalysisProgress,
     finishAssessment,
     resetAssessment,
-    getSavedMeta,
     resumeAssessment,
+    listDrafts,
+    deleteDraftById,
   } = useAssessment();
 
   const { step, companyInfo, assessmentType, currentPillarIndex, currentQuestionIndex, answers, analysisProgress, analysisStatus } = state;
@@ -47,24 +46,12 @@ export default function App() {
 
   function handleReset() {
     resetAssessment();
-    setResumeDismissed(false);
     setHistoryView('none');
     setHistoryEntry(null);
   }
 
   function handleSelectType(type) {
     update({ assessmentType: type, step: 'setup' });
-    setResumeDismissed(true);
-  }
-
-  function handleResume() {
-    resumeAssessment();
-    setResumeDismissed(true);
-  }
-
-  function handleDiscard() {
-    resetAssessment();
-    setResumeDismissed(true);
   }
 
   function openHistory() {
@@ -75,6 +62,15 @@ export default function App() {
   function viewHistoryReport(entry) {
     setHistoryEntry(entry);
     setHistoryView('detail');
+  }
+
+  function handleResumeDraft(draft) {
+    resumeAssessment(draft);
+    setHistoryView('none');
+  }
+
+  function handleDeleteDraft(id) {
+    deleteDraftById(id);
   }
 
   async function runAnalysis() {
@@ -162,7 +158,7 @@ export default function App() {
     finishAssessment(pillarResults, reportData);
   }
 
-  // ── HISTORY — detail view ────────────────────────────────
+  // ── HISTORY — detail view ────────────────────────────────────────
   if (historyView === 'detail' && historyEntry) {
     return (
       <div className="nx-page">
@@ -179,7 +175,7 @@ export default function App() {
     );
   }
 
-  // ── HISTORY — list ────────────────────────────────────────
+  // ── HISTORY — list ───────────────────────────────────────────────
   if (historyView === 'list') {
     return (
       <div className="nx-page">
@@ -188,41 +184,26 @@ export default function App() {
         <HistoryScreen
           onViewReport={viewHistoryReport}
           onClose={() => setHistoryView('none')}
+          onResumeDraft={handleResumeDraft}
+          onDeleteDraft={handleDeleteDraft}
         />
       </div>
     );
   }
 
-  // ── RESUME PROMPT ────────────────────────────────────────
-  if (!resumeDismissed && step === 'setup' && !assessmentType) {
-    const savedMeta = getSavedMeta();
-    if (savedMeta) {
-      return (
-        <div className="nx-page">
-          <div className="nx-topline" />
-          <Header onHistory={openHistory} />
-          <ResumeScreen
-            meta={savedMeta}
-            onResume={handleResume}
-            onDiscard={handleDiscard}
-          />
-        </div>
-      );
-    }
-  }
-
-  // ── HOME ────────────────────────────────────────────────
+  // ── HOME ─────────────────────────────────────────────────────────
   if (step === 'setup' && !assessmentType) {
+    const draftCount = listDrafts().length;
     return (
       <div className="nx-page">
         <div className="nx-topline" />
-        <Header onHistory={openHistory} />
-        <HomeScreen onSelect={handleSelectType} />
+        <Header onHistory={openHistory} draftCount={draftCount} />
+        <HomeScreen onSelect={handleSelectType} draftCount={draftCount} onOpenHistory={openHistory} />
       </div>
     );
   }
 
-  // ── SETUP ───────────────────────────────────────────────
+  // ── SETUP ────────────────────────────────────────────────────────
   if (step === 'setup' && assessmentType) {
     return (
       <div className="nx-page">
@@ -237,7 +218,7 @@ export default function App() {
     );
   }
 
-  // ── QUESTIONNAIRE ────────────────────────────────────────
+  // ── QUESTIONNAIRE ────────────────────────────────────────────────
   if (step === 'questionnaire' && currentPillar) {
     const questions  = currentPillar.questions;
     const question   = questions[currentQuestionIndex];
@@ -251,7 +232,7 @@ export default function App() {
         <Header
           pillarInfo={pillarInfo}
           onReset={() => {
-            if (window.confirm('Cancelar o assessment? O progresso foi salvo localmente e pode ser retomado.')) {
+            if (window.confirm('Pausar o assessment? O progresso foi salvo e pode ser retomado em Assessments → Em andamento.')) {
               handleReset();
             }
           }}
@@ -285,7 +266,7 @@ export default function App() {
     );
   }
 
-  // ── ANALYZING ────────────────────────────────────────────
+  // ── ANALYZING ────────────────────────────────────────────────────
   if (step === 'analyzing') {
     return (
       <div className="nx-page">
@@ -298,7 +279,7 @@ export default function App() {
     );
   }
 
-  // ── REPORT ───────────────────────────────────────────────
+  // ── REPORT ───────────────────────────────────────────────────────
   if (step === 'report') {
     return (
       <div className="nx-page">
