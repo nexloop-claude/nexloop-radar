@@ -3,6 +3,7 @@ import RadarChart from './RadarChart';
 import { getMaturityLevel } from '../data/pillars';
 import { getStoredLogo } from './ApiKeyModal';
 import { generatePDF, reportFilename } from '../utils/generatePDF';
+import nexloopLogo from '/nexloop-logo.png';
 import './Report.css';
 
 const IMPACT_COLORS = {
@@ -95,15 +96,7 @@ export default function Report({ companyInfo, pillarResults, reportData, onReset
         <div className="report-header">
           <div className="report-confidential">CONFIDENCIAL</div>
           <div className="report-brand">
-            {logo
-              ? <img src={logo} alt="Logo" className="report-logo-img" />
-              : (
-                <>
-                  <span className="report-logo-nexloop">NEXLOOP</span>
-                  <span className="report-logo-radar">RADAR</span>
-                </>
-              )
-            }
+            <img src={logo || nexloopLogo} alt="Logo" className="report-logo-img" />
           </div>
           <h1 className="report-title">{reportTitle}</h1>
           <div className="report-meta">
@@ -288,10 +281,7 @@ export default function Report({ companyInfo, pillarResults, reportData, onReset
         {/* FOOTER */}
         <footer className="report-footer">
           <div className="report-footer-brand">
-            {logo
-              ? <img src={logo} alt="Logo" className="report-footer-logo-img" />
-              : <span className="report-logo-nexloop" style={{ fontSize: 14 }}>NEXLOOP</span>
-            }
+            <img src={logo || nexloopLogo} alt="Logo" className="report-footer-logo-img" />
             <span style={{ color: '#888' }}>· Empowering Your Business · nexloop.tech</span>
           </div>
           <p className="report-footer-note">

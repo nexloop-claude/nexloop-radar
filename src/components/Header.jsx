@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ApiKeyModal, { getStoredLogo } from './ApiKeyModal';
 import AdminPinModal from './AdminPinModal';
+import nexloopLogo from '/nexloop-logo.png';
 import './Header.css';
 
 export default function Header({ subtitle, pillarInfo, onReset, onHistory, onLogout, draftCount = 0 }) {
@@ -29,15 +30,11 @@ export default function Header({ subtitle, pillarInfo, onReset, onHistory, onLog
       <header className="nx-header">
         <div className="nx-header-inner nx-container-wide">
           <div className="nx-logo" onClick={onReset} style={{ cursor: onReset ? 'pointer' : 'default' }}>
-            {logo
-              ? <img src={logo} alt="Logo" className="nx-logo-img" />
-              : (
-                <>
-                  <span className="nx-logo-nexloop">NEXLOOP</span>
-                  <span className="nx-logo-radar">RADAR</span>
-                </>
-              )
-            }
+            <img
+              src={logo || nexloopLogo}
+              alt="Logo"
+              className="nx-logo-img"
+            />
           </div>
 
           <div className="nx-header-center">

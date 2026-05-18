@@ -7,7 +7,7 @@ import {
   recordFailedAttempt,
   clearAttempts,
 } from '../utils/auth';
-import { getStoredLogo } from './ApiKeyModal';
+import nexloopLogo from '/nexloop-logo.png';
 import './LoginScreen.css';
 
 function LockIcon() {
@@ -38,7 +38,6 @@ export default function LoginScreen({ onLogin }) {
   const [lockoutUntil, setLockoutUntil] = useState(() => getLockoutUntil());
   const [countdown, setCountdown]       = useState('');
   const inputRef = useRef(null);
-  const logo = getStoredLogo();
 
   // Focus input on mount
   useEffect(() => {
@@ -121,15 +120,7 @@ export default function LoginScreen({ onLogin }) {
 
         {/* Brand */}
         <div className="login-brand">
-          {logo
-            ? <img src={logo} alt="Logo" className="login-logo-img" />
-            : (
-              <div className="login-logo-text">
-                <span className="login-nexloop">NEXLOOP</span>
-                <span className="login-radar">RADAR</span>
-              </div>
-            )
-          }
+          <img src={nexloopLogo} alt="Nexloop" className="login-logo-img" />
         </div>
 
         <div className="login-icon"><LockIcon /></div>
