@@ -1,0 +1,187 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F5F5F7;
+  padding: 24px;
+}
+
+.login-card {
+  background: #fff;
+  border: 1px solid #E4E4E4;
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* ── Brand ── */
+.login-brand {
+  margin-bottom: 28px;
+}
+
+.login-logo-img {
+  max-height: 44px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.login-logo-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-nexloop {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: var(--nx-grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-radar {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--nx-preto);
+  letter-spacing: 1px;
+}
+
+/* ── Icon ── */
+.login-icon {
+  margin-bottom: 20px;
+}
+
+/* ── Text ── */
+.login-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--nx-preto);
+  letter-spacing: -0.4px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 300px;
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+/* ── Form ── */
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.login-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login-input-wrap .nx-input {
+  flex: 1;
+  padding-right: 44px;
+}
+
+.login-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.login-toggle-btn:hover {
+  opacity: 1;
+}
+
+.login-error {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* ── Lockout ── */
+.login-lockout {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.login-lockout-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+.login-lockout-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--nx-preto);
+  margin-bottom: 8px;
+}
+
+.login-lockout-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.login-lockout-timer {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #EF4444;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Footer ── */
+.login-footer {
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ── Shake animation ── */
+@keyframes loginShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(6px); }
+}
+
+.login-shake {
+  animation: loginShake 0.45s ease;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 36px 24px;
+  }
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { validateApiKey } from '../utils/claudeApi';
-import { setAdminPin, getAdminPin } from './AdminPinModal';
+import { changePassword } from '../utils/auth';
 import './ApiKeyModal.css';
 
 const LOGO_KEY = 'nexloop_logo_b64';
@@ -10,13 +10,17 @@ export function getStoredLogo() {
 }
 
 export default function ApiKeyModal({ onClose }) {
-  const [key, setKey] = useState('');
-  const [status, setStatus] = useState('idle');
-  const [showKey, setShowKey] = useState(false);
-  const [logo, setLogo] = useState(getStoredLogo());
-  const [newPin, setNewPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
-  const [pinStatus, setPinStatus] = useState('idle'); // idle | saved | mismatch
+  const [key, setKey]             = useState('');
+  const [status, setStatus]       = useState('idle');
+  const [showKey, setShowKey]     = useState(false);
+  const [logo, setLogo]           = useState(getStoredLogo());
+
+  const [currentPwd, setCurrentPwd]   = useState('');
+  const [newPwd, setNewPwd]           = useState('');
+  const [confirmPwd, setConfirmPwd]   = useState('');
+  const [pwdStatus, setPwdStatus]     = useState('idle'); // idle | saving | saved | error | mismatch | short
+  const [showPwds, setShowPwds]       = useState(false);
+
   const logoInputRef = useRef(null);
 
   useEffect(() => {
@@ -60,14 +64,21 @@ export default function ApiKeyModal({ onClose }) {
     if (logoInputRef.current) logoInputRef.current.value = '';
   }
 
-  function handleSavePin() {
-    if (!newPin) return;
-    if (newPin !== confirmPin) { setPinStatus('mismatch'); return; }
-    setAdminPin(newPin);
-    setNewPin('');
-    setConfirmPin('');
-    setPinStatus('saved');
-    setTimeout(() => setPinStatus('idle'), 2000);
+  async function handleChangePassword() {
+    if (!currentPwd || !newPwd || !confirmPwd) return;
+    if (newPwd.length < 8) { setPwdStatus('short'); return; }
+    if (newPwd !== confirmPwd) { setPwdStatus('mismatch'); return; }
+    setPwdStatus('saving');
+    const ok = await changePassword(currentPwd, newPwd);
+    if (ok) {
+      setCurrentPwd('');
+      setNewPwd('');
+      setConfirmPwd('');
+      setPwdStatus('saved');
+      setTimeout(() => setPwdStatus('idle'), 3000);
+    } else {
+      setPwdStatus('error');
+    }
   }
 
   return (
@@ -150,44 +161,67 @@ export default function ApiKeyModal({ onClose }) {
 
           <div className="admin-divider" />
 
-          {/* PIN */}
+          {/* CHANGE PASSWORD */}
           <div className="admin-section">
-            <h3 className="admin-section-title">🔐 Alterar PIN Admin</h3>
-            <div className="admin-pin-grid">
+            <h3 className="admin-section-title">🔐 Alterar Senha de Acesso</h3>
+            <p className="modal-desc">A nova senha deve ter no mínimo 8 caracteres.</p>
+
+            <div className="admin-pwd-grid">
+              <div className="nx-field" style={{ gridColumn: '1 / -1' }}>
+                <label className="nx-label">Senha atual</label>
+                <div className="key-input-wrap">
+                  <input
+                    className="nx-input"
+                    type={showPwds ? 'text' : 'password'}
+                    value={currentPwd}
+                    onChange={e => { setCurrentPwd(e.target.value); setPwdStatus('idle'); }}
+                    placeholder="Sua senha atual"
+                    autoComplete="current-password"
+                    data-lpignore="true"
+                  />
+                  <button className="btn btn-sm btn-secondary key-toggle" type="button" onClick={() => setShowPwds(v => !v)}>
+                    {showPwds ? '🙈' : '👁️'}
+                  </button>
+                </div>
+              </div>
               <div className="nx-field">
-                <label className="nx-label">Novo PIN</label>
+                <label className="nx-label">Nova senha</label>
                 <input
-                  className="nx-input pin-masked"
-                  type="text"
-                  inputMode="text"
-                  value={newPin}
-                  onChange={e => { setNewPin(e.target.value); setPinStatus('idle'); }}
-                  placeholder="Novo PIN"
-                  autoComplete="off"
+                  className="nx-input"
+                  type={showPwds ? 'text' : 'password'}
+                  value={newPwd}
+                  onChange={e => { setNewPwd(e.target.value); setPwdStatus('idle'); }}
+                  placeholder="Nova senha"
+                  autoComplete="new-password"
                   data-lpignore="true"
-                  data-1p-ignore="true"
                 />
               </div>
               <div className="nx-field">
-                <label className="nx-label">Confirmar PIN</label>
+                <label className="nx-label">Confirmar nova senha</label>
                 <input
-                  className="nx-input pin-masked"
-                  type="text"
-                  inputMode="text"
-                  value={confirmPin}
-                  onChange={e => { setConfirmPin(e.target.value); setPinStatus('idle'); }}
-                  placeholder="Repita o PIN"
-                  autoComplete="off"
+                  className="nx-input"
+                  type={showPwds ? 'text' : 'password'}
+                  value={confirmPwd}
+                  onChange={e => { setConfirmPwd(e.target.value); setPwdStatus('idle'); }}
+                  placeholder="Repita a nova senha"
+                  autoComplete="new-password"
                   data-lpignore="true"
-                  data-1p-ignore="true"
                 />
               </div>
             </div>
-            {pinStatus === 'mismatch' && <div className="nx-alert nx-alert-error">Os PINs não coincidem.</div>}
-            {pinStatus === 'saved'    && <div className="nx-alert nx-alert-success">✅ PIN alterado com sucesso!</div>}
+
+            {pwdStatus === 'short'    && <div className="nx-alert nx-alert-error">A senha deve ter no mínimo 8 caracteres.</div>}
+            {pwdStatus === 'mismatch' && <div className="nx-alert nx-alert-error">As senhas não coincidem.</div>}
+            {pwdStatus === 'error'    && <div className="nx-alert nx-alert-error">Senha atual incorreta.</div>}
+            {pwdStatus === 'saved'    && <div className="nx-alert nx-alert-success">✅ Senha alterada com sucesso!</div>}
+
             <div className="admin-row">
-              <button className="btn btn-primary btn-sm" onClick={handleSavePin} disabled={!newPin || !confirmPin}>
-                ✓ Salvar PIN
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={handleChangePassword}
+                disabled={!currentPwd || !newPwd || !confirmPwd || pwdStatus === 'saving'}
+              >
+                {pwdStatus === 'saving' ? '⏳ Salvando...' : '✓ Alterar senha'}
               </button>
             </div>
           </div>

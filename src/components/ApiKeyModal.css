@@ -103,6 +103,13 @@
   gap: 12px;
 }
 
+.admin-pwd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
 .logo-preview-wrap {
   display: flex;
   flex-direction: column;

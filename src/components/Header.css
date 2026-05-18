@@ -79,6 +79,16 @@
   gap: 6px;
 }
 
+.nx-header-logout-btn {
+  color: var(--text-muted);
+}
+
+.nx-header-logout-btn:hover {
+  color: #DC2626;
+  border-color: #FCA5A5;
+  background: #FEF2F2;
+}
+
 .nx-header-draft-badge {
   display: inline-flex;
   align-items: center;

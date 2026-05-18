@@ -3,8 +3,8 @@ import ApiKeyModal, { getStoredLogo } from './ApiKeyModal';
 import AdminPinModal from './AdminPinModal';
 import './Header.css';
 
-export default function Header({ subtitle, pillarInfo, onReset, onHistory, draftCount = 0 }) {
-  const [showPin, setShowPin]   = useState(false);
+export default function Header({ subtitle, pillarInfo, onReset, onHistory, onLogout, draftCount = 0 }) {
+  const [showPin, setShowPin]     = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const logo = getStoredLogo();
 
@@ -15,6 +15,12 @@ export default function Header({ subtitle, pillarInfo, onReset, onHistory, draft
   function handlePinSuccess() {
     setShowPin(false);
     setShowConfig(true);
+  }
+
+  function handleLogoutClick() {
+    if (window.confirm('Encerrar sessão? Você precisará inserir a senha novamente para acessar o sistema.')) {
+      onLogout();
+    }
   }
 
   return (
@@ -59,10 +65,19 @@ export default function Header({ subtitle, pillarInfo, onReset, onHistory, draft
             <button
               className="btn btn-sm btn-secondary"
               onClick={handleConfigClick}
-              title="Acesso administrativo"
+              title="Configurações administrativas"
             >
               ⚙️
             </button>
+            {onLogout && (
+              <button
+                className="btn btn-sm btn-secondary nx-header-logout-btn"
+                onClick={handleLogoutClick}
+                title="Encerrar sessão"
+              >
+                Sair
+              </button>
+            )}
           </div>
         </div>
       </header>

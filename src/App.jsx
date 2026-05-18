@@ -3,8 +3,10 @@ import { useAssessment } from './hooks/useAssessment';
 import { PILLARS, getMaturityLevel, calculatePillarScore } from './data/pillars';
 import { BUSINESS_PILLARS } from './data/businessPillars';
 import { analyzePillar, generateReport } from './utils/claudeApi';
+import { isAuthenticated, logout } from './utils/auth';
 
 import Header from './components/Header';
+import LoginScreen from './components/LoginScreen';
 import HomeScreen from './components/HomeScreen';
 import SetupScreen from './components/SetupScreen';
 import ProgressBar from './components/ProgressBar';
@@ -15,6 +17,18 @@ import HistoryScreen from './components/HistoryScreen';
 import './App.css';
 
 export default function App() {
+  const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
+
+  // ── AUTH GATE ────────────────────────────────────────────────────
+  if (!authenticated) {
+    return <LoginScreen onLogin={() => setAuthenticated(true)} />;
+  }
+
+  function handleLogout() {
+    logout();
+    setAuthenticated(false);
+  }
+
   // 'none' | 'list' | 'detail'
   const [historyView, setHistoryView] = useState('none');
   const [historyEntry, setHistoryEntry] = useState(null);
@@ -163,7 +177,7 @@ export default function App() {
     return (
       <div className="nx-page">
         <div className="nx-topline" />
-        <Header onHistory={openHistory} />
+        <Header onHistory={openHistory} onLogout={handleLogout} />
         <Report
           companyInfo={historyEntry.companyInfo}
           pillarResults={historyEntry.pillarResults}
@@ -180,7 +194,7 @@ export default function App() {
     return (
       <div className="nx-page">
         <div className="nx-topline" />
-        <Header onHistory={openHistory} />
+        <Header onHistory={openHistory} onLogout={handleLogout} />
         <HistoryScreen
           onViewReport={viewHistoryReport}
           onClose={() => setHistoryView('none')}
@@ -197,7 +211,7 @@ export default function App() {
     return (
       <div className="nx-page">
         <div className="nx-topline" />
-        <Header onHistory={openHistory} draftCount={draftCount} />
+        <Header onHistory={openHistory} draftCount={draftCount} onLogout={handleLogout} />
         <HomeScreen onSelect={handleSelectType} draftCount={draftCount} onOpenHistory={openHistory} />
       </div>
     );
@@ -207,7 +221,7 @@ export default function App() {
   if (step === 'setup' && assessmentType) {
     return (
       <div className="nx-page">
-        <Header onHistory={openHistory} />
+        <Header onHistory={openHistory} onLogout={handleLogout} />
         <SetupScreen
           pillars={availablePillars}
           assessmentType={assessmentType}
@@ -231,6 +245,7 @@ export default function App() {
       <div className="nx-page">
         <Header
           pillarInfo={pillarInfo}
+          onLogout={handleLogout}
           onReset={() => {
             if (window.confirm('Pausar o assessment? O progresso foi salvo e pode ser retomado em Assessments → Em andamento.')) {
               handleReset();
@@ -283,7 +298,7 @@ export default function App() {
   if (step === 'report') {
     return (
       <div className="nx-page">
-        <Header onHistory={openHistory} />
+        <Header onHistory={openHistory} onLogout={handleLogout} />
         <Report
           companyInfo={companyInfo}
           pillarResults={state.pillarResults}

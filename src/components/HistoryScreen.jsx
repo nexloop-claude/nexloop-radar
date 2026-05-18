@@ -69,6 +69,18 @@ export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, on
   const [entries, setEntries] = useState(() => loadHistory());
   const [tab, setTab]         = useState(initialDrafts.length > 0 ? 'inprogress' : 'completed');
 
+  function handleClearAllHistory() {
+    if (!window.confirm(`Apagar todos os ${entries.length} relatórios concluídos? Esta ação não pode ser desfeita.`)) return;
+    try { localStorage.setItem('nexloop_history', JSON.stringify([])); } catch { /* ignore */ }
+    setEntries([]);
+  }
+
+  function handleClearAllDrafts() {
+    if (!window.confirm(`Excluir todos os ${drafts.length} assessments em andamento? As respostas serão perdidas.`)) return;
+    drafts.forEach(d => onDeleteDraft(d.id));
+    setDrafts([]);
+  }
+
   function handleDeleteHistory(id) {
     if (!window.confirm('Remover este relatório do histórico?')) return;
     deleteHistoryEntry(id);
@@ -126,7 +138,15 @@ export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, on
 
         {/* ── Em andamento ── */}
         {tab === 'inprogress' && (
-          drafts.length === 0 ? (
+          <>
+          {drafts.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <button className="btn btn-sm history-delete-btn" onClick={handleClearAllDrafts}>
+                Excluir todos os rascunhos
+              </button>
+            </div>
+          )}
+          {drafts.length === 0 ? (
             <div className="history-empty">
               <div className="history-empty-icon"><IconClock /></div>
               <p className="history-empty-text">Nenhum assessment em andamento.</p>
@@ -202,12 +222,21 @@ export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, on
                 );
               })}
             </div>
-          )
+          )}
+          </>
         )}
 
         {/* ── Concluídos ── */}
         {tab === 'completed' && (
-          entries.length === 0 ? (
+          <>
+          {entries.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <button className="btn btn-sm history-delete-btn" onClick={handleClearAllHistory}>
+                Apagar todos os relatórios
+              </button>
+            </div>
+          )}
+          {entries.length === 0 ? (
             <div className="history-empty">
               <div className="history-empty-icon"><IconEmpty /></div>
               <p className="history-empty-text">Nenhum relatório gerado ainda.</p>
@@ -283,7 +312,8 @@ export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, on
                 );
               })}
             </div>
-          )
+          )}
+          </>
         )}
       </div>
     </div>
