@@ -3,9 +3,10 @@ import { useAssessment } from './hooks/useAssessment';
 import { PILLARS, getMaturityLevel, calculatePillarScore } from './data/pillars';
 import { BUSINESS_PILLARS } from './data/businessPillars';
 import { analyzePillar, generateReport } from './utils/claudeApi';
-import { isAuthenticated, logout } from './utils/auth';
+import { isAuthenticated, getSession, logout, hasUsers } from './utils/authV2';
 
 import Header from './components/Header';
+import SetupWizard from './components/SetupWizard';
 import LoginScreen from './components/LoginScreen';
 import HomeScreen from './components/HomeScreen';
 import SetupScreen from './components/SetupScreen';
@@ -14,13 +15,21 @@ import QuestionCard from './components/QuestionCard';
 import AnalysisScreen from './components/AnalysisScreen';
 import Report from './components/Report';
 import HistoryScreen from './components/HistoryScreen';
+import UserManagement from './components/UserManagement';
 import './App.css';
 
 export default function App() {
-  // ── All hooks must be at the top — no conditional calls ──────────
+  // ── All hooks at the top (Rules of Hooks) ────────────────────────
   const [authenticated, setAuthenticated] = useState(() => isAuthenticated());
+  const [usersExist, setUsersExist]       = useState(() => hasUsers());
   const [historyView, setHistoryView]     = useState('none');
   const [historyEntry, setHistoryEntry]   = useState(null);
+  const [showUserMgmt, setShowUserMgmt]   = useState(false);
+
+  const session  = getSession();
+  const userId   = session?.userId   || null;
+  const userRole = session?.role     || 'user';
+  const isAdmin  = userRole === 'admin';
 
   const {
     state,
@@ -41,17 +50,22 @@ export default function App() {
     resumeAssessment,
     listDrafts,
     deleteDraftById,
-  } = useAssessment();
+  } = useAssessment(userId);
 
   const { step, companyInfo, assessmentType, currentPillarIndex, currentQuestionIndex, answers, analysisProgress, analysisStatus } = state;
-
   const availablePillars = assessmentType === 'business' ? BUSINESS_PILLARS : PILLARS;
 
-  // ── AUTH GATE ────────────────────────────────────────────────────
+  // ── First-run setup ──────────────────────────────────────────────
+  if (!usersExist) {
+    return <SetupWizard onComplete={() => { setUsersExist(true); }} />;
+  }
+
+  // ── Auth gate ────────────────────────────────────────────────────
   if (!authenticated) {
     return <LoginScreen onLogin={() => setAuthenticated(true)} />;
   }
 
+  // ── Helpers ──────────────────────────────────────────────────────
   function handleLogout() {
     logout();
     setAuthenticated(false);
@@ -162,21 +176,35 @@ export default function App() {
     let reportData = null;
     try {
       reportData = await generateReport(companyInfo, pillarResults);
-    } catch {
-      // Finaliza sem dados de relatório se a geração falhar
-    }
+    } catch { /* Finaliza sem dados de relatório */ }
 
     setAnalysisProgress(100, { label: 'Relatório concluído!', done: true });
     await new Promise(r => setTimeout(r, 600));
     finishAssessment(pillarResults, reportData);
   }
 
-  // ── HISTORY — detail view ────────────────────────────────────────
+  // ── User management (admin only) ─────────────────────────────────
+  if (showUserMgmt && isAdmin) {
+    return (
+      <div className="nx-page">
+        <div className="nx-topline" />
+        <Header
+          isAdmin={isAdmin}
+          onHistory={openHistory}
+          onLogout={handleLogout}
+          onUsers={() => setShowUserMgmt(true)}
+        />
+        <UserManagement onClose={() => setShowUserMgmt(false)} />
+      </div>
+    );
+  }
+
+  // ── History — detail ─────────────────────────────────────────────
   if (historyView === 'detail' && historyEntry) {
     return (
       <div className="nx-page">
         <div className="nx-topline" />
-        <Header onHistory={openHistory} onLogout={handleLogout} />
+        <Header isAdmin={isAdmin} onHistory={openHistory} onLogout={handleLogout} onUsers={() => setShowUserMgmt(true)} />
         <Report
           companyInfo={historyEntry.companyInfo}
           pillarResults={historyEntry.pillarResults}
@@ -188,39 +216,47 @@ export default function App() {
     );
   }
 
-  // ── HISTORY — list ───────────────────────────────────────────────
+  // ── History — list ───────────────────────────────────────────────
   if (historyView === 'list') {
     return (
       <div className="nx-page">
         <div className="nx-topline" />
-        <Header onHistory={openHistory} onLogout={handleLogout} />
+        <Header isAdmin={isAdmin} onHistory={openHistory} onLogout={handleLogout} onUsers={() => setShowUserMgmt(true)} />
         <HistoryScreen
           onViewReport={viewHistoryReport}
           onClose={() => setHistoryView('none')}
           onResumeDraft={handleResumeDraft}
           onDeleteDraft={handleDeleteDraft}
+          userId={userId}
+          isAdmin={isAdmin}
         />
       </div>
     );
   }
 
-  // ── HOME ─────────────────────────────────────────────────────────
+  // ── Home ─────────────────────────────────────────────────────────
   if (step === 'setup' && !assessmentType) {
     const draftCount = listDrafts().length;
     return (
       <div className="nx-page">
         <div className="nx-topline" />
-        <Header onHistory={openHistory} draftCount={draftCount} onLogout={handleLogout} />
+        <Header
+          isAdmin={isAdmin}
+          onHistory={openHistory}
+          draftCount={draftCount}
+          onLogout={handleLogout}
+          onUsers={() => setShowUserMgmt(true)}
+        />
         <HomeScreen onSelect={handleSelectType} draftCount={draftCount} onOpenHistory={openHistory} />
       </div>
     );
   }
 
-  // ── SETUP ────────────────────────────────────────────────────────
+  // ── Setup ────────────────────────────────────────────────────────
   if (step === 'setup' && assessmentType) {
     return (
       <div className="nx-page">
-        <Header onHistory={openHistory} onLogout={handleLogout} />
+        <Header isAdmin={isAdmin} onHistory={openHistory} onLogout={handleLogout} onUsers={() => setShowUserMgmt(true)} />
         <SetupScreen
           pillars={availablePillars}
           assessmentType={assessmentType}
@@ -231,7 +267,7 @@ export default function App() {
     );
   }
 
-  // ── QUESTIONNAIRE ────────────────────────────────────────────────
+  // ── Questionnaire ────────────────────────────────────────────────
   if (step === 'questionnaire' && currentPillar) {
     const questions  = currentPillar.questions;
     const question   = questions[currentQuestionIndex];
@@ -243,6 +279,7 @@ export default function App() {
     return (
       <div className="nx-page">
         <Header
+          isAdmin={isAdmin}
           pillarInfo={pillarInfo}
           onLogout={handleLogout}
           onReset={() => {
@@ -280,7 +317,7 @@ export default function App() {
     );
   }
 
-  // ── ANALYZING ────────────────────────────────────────────────────
+  // ── Analyzing ────────────────────────────────────────────────────
   if (step === 'analyzing') {
     return (
       <div className="nx-page">
@@ -293,11 +330,11 @@ export default function App() {
     );
   }
 
-  // ── REPORT ───────────────────────────────────────────────────────
+  // ── Report ───────────────────────────────────────────────────────
   if (step === 'report') {
     return (
       <div className="nx-page">
-        <Header onHistory={openHistory} onLogout={handleLogout} />
+        <Header isAdmin={isAdmin} onHistory={openHistory} onLogout={handleLogout} onUsers={() => setShowUserMgmt(true)} />
         <Report
           companyInfo={companyInfo}
           pillarResults={state.pillarResults}

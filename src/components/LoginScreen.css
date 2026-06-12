@@ -179,9 +179,27 @@
   animation: loginShake 0.45s ease;
 }
 
+/* ── TOTP step ── */
+.login-totp-hint {
+  background: #F0F9FF;
+  border: 1px solid #BAE6FD;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #0369A1;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.login-totp-icon { font-size: 16px; margin-right: 6px; }
+
+.login-totp-input {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 10px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 480px) {
-  .login-card {
-    padding: 36px 24px;
-  }
+  .login-card { padding: 36px 24px; }
 }

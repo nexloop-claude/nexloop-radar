@@ -1,0 +1,209 @@
+.setup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f8fc 0%, #ede8f8 100%);
+  padding: 24px 16px;
+}
+
+.setup-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(81,11,97,.10), 0 1px 4px rgba(0,0,0,.06);
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 460px;
+  border-top: 4px solid transparent;
+  border-image: linear-gradient(90deg, #18B8FF, #DB05FF, #510B61) 1;
+}
+
+.setup-shake {
+  animation: setupShake .4s ease;
+}
+@keyframes setupShake {
+  0%,100% { transform: translateX(0); }
+  20%,60%  { transform: translateX(-6px); }
+  40%,80%  { transform: translateX(6px); }
+}
+
+.setup-brand {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.setup-logo {
+  height: 32px;
+  object-fit: contain;
+}
+
+/* Steps */
+.setup-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.setup-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.setup-step-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #E8E4F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #C4C4C4;
+  background: #fff;
+  flex-shrink: 0;
+  transition: all .2s;
+}
+.setup-step.active .setup-step-dot {
+  border-color: #DB05FF;
+  color: #DB05FF;
+}
+.setup-step.done .setup-step-dot {
+  border-color: #22C55E;
+  background: #22C55E;
+  color: #fff;
+}
+.setup-step-label {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+}
+.setup-step.active .setup-step-label { color: #1E1E1E; font-weight: 600; }
+.setup-step.done  .setup-step-label { color: #22C55E; }
+.setup-step-line {
+  width: 28px;
+  height: 2px;
+  background: #E8E4F0;
+  flex-shrink: 0;
+  margin: 0 4px;
+}
+
+.setup-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1E1E1E;
+  margin: 0 0 6px;
+  text-align: center;
+}
+.setup-subtitle {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  margin: 0 0 24px;
+  line-height: 1.5;
+}
+
+.setup-form { display: flex; flex-direction: column; gap: 16px; }
+
+/* Password strength */
+.strength-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+.strength-track {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.strength-seg {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+  transition: background .2s;
+}
+.strength-label {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 72px;
+  text-align: right;
+}
+
+/* QR code */
+.setup-qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+.setup-qr-img {
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  border: 2px solid #E8E4F0;
+}
+.setup-qr-placeholder {
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  border: 2px dashed #E8E4F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 13px;
+}
+
+.setup-secret-details {
+  background: #F8F8FC;
+  border-radius: 8px;
+  border: 1px solid #E8E4F0;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+.setup-secret-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: #510B61;
+  font-weight: 600;
+  user-select: none;
+}
+.setup-secret-box { margin-top: 12px; }
+.setup-secret-label { font-size: 11px; color: #999; margin: 0 0 4px; }
+.setup-secret-code {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #E8E4F0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  word-break: break-all;
+  letter-spacing: .1em;
+  color: #1E1E1E;
+  margin-bottom: 8px;
+}
+.setup-secret-hint { font-size: 11px; color: #999; margin: 0; line-height: 1.4; }
+
+/* TOTP input */
+.setup-totp-input {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 8px;
+}
+
+.setup-submit { width: 100%; margin-top: 4px; }
+.setup-back-btn { width: 100%; margin-top: 8px; }
+.setup-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin: 20px 0 0;
+}
+
+@media (max-width: 500px) {
+  .setup-card { padding: 28px 20px; }
+  .setup-step-label { display: none; }
+  .setup-step-line { width: 20px; }
+}

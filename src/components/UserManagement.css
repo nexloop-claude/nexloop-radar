@@ -1,0 +1,150 @@
+.um-page { min-height: 100vh; background: #F8F8FC; }
+
+.um-header {
+  background: #fff;
+  border-bottom: 1px solid #E8E4F0;
+  padding: 20px 0;
+}
+.um-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.um-header-actions { display: flex; gap: 8px; }
+.um-title { font-size: 22px; font-weight: 800; color: #1E1E1E; margin: 0 0 2px; }
+.um-subtitle { font-size: 13px; color: #888; margin: 0; }
+
+.um-body { padding: 28px 0; }
+
+/* ── User list ── */
+.um-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+.um-card {
+  background: #fff;
+  border: 1px solid #E8E4F0;
+  border-radius: 10px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.um-card-info { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.um-card-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #DB05FF, #18B8FF);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.um-card-name {
+  font-size: 15px; font-weight: 700; color: #1E1E1E;
+  display: flex; align-items: center; gap: 8px;
+}
+.um-you-tag {
+  font-size: 11px; font-weight: 600; color: #18B8FF;
+  background: #EBF8FF; border-radius: 4px; padding: 1px 6px;
+}
+.um-card-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.um-card-date { font-size: 12px; color: #888; }
+
+.um-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.um-role-badge {
+  font-size: 11px; font-weight: 700;
+  border-radius: 4px; padding: 2px 8px;
+}
+.um-role-admin {
+  background: linear-gradient(90deg, #DB05FF22, #18B8FF22);
+  color: #510B61;
+  border: 1px solid #DB05FF44;
+}
+.um-role-user {
+  background: #F0F0F8;
+  color: #666;
+  border: 1px solid #E8E4F0;
+}
+
+.um-delete-btn {
+  color: #EF4444 !important;
+  border-color: #FCA5A5 !important;
+}
+.um-delete-btn:hover { background: #FEF2F2 !important; }
+
+/* ── Info box ── */
+.um-info-box {
+  background: #F8F8FC;
+  border: 1px solid #E8E4F0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+}
+.um-info-box p { margin: 0 0 4px; }
+.um-info-box p:last-child { margin: 0; }
+
+/* ── Strength bar ── */
+.um-strength-wrap { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.um-strength-track { display: flex; gap: 4px; flex: 1; }
+.um-strength-seg { height: 4px; flex: 1; border-radius: 2px; transition: background .2s; }
+.um-strength-label { font-size: 11px; font-weight: 600; min-width: 72px; text-align: right; }
+
+/* ── Dialogs ── */
+.um-overlay {
+  position: fixed; inset: 0;
+  background: rgba(23,15,61,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 16px;
+}
+.um-dialog {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px;
+  width: 100%; max-width: 440px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.18);
+  max-height: 90vh; overflow-y: auto;
+}
+.um-dialog-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.um-dialog-header h2 { font-size: 18px; font-weight: 800; color: #1E1E1E; margin: 0; }
+.um-dialog-intro { font-size: 13px; color: #666; margin: 0 0 16px; line-height: 1.5; }
+.um-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.um-dialog-close { width: 100%; margin-top: 12px; }
+
+.um-form { display: flex; flex-direction: column; gap: 16px; }
+
+/* QR */
+.um-qr-wrap { display: flex; justify-content: center; margin: 12px 0; }
+.um-qr-img { width: 200px; height: 200px; border-radius: 8px; border: 2px solid #E8E4F0; }
+.um-qr-placeholder {
+  width: 200px; height: 200px;
+  border-radius: 8px; border: 2px dashed #E8E4F0;
+  display: flex; align-items: center; justify-content: center;
+  color: #999; font-size: 13px;
+}
+
+.um-secret-details {
+  background: #F8F8FC; border-radius: 8px;
+  border: 1px solid #E8E4F0; padding: 10px 14px; margin-bottom: 12px;
+}
+.um-secret-details summary { cursor: pointer; font-size: 13px; color: #510B61; font-weight: 600; }
+.um-secret-code {
+  display: block; font-family: monospace; font-size: 13px;
+  background: #fff; border: 1px solid #E8E4F0; border-radius: 6px;
+  padding: 8px; word-break: break-all; letter-spacing: .1em;
+  color: #1E1E1E; margin: 8px 0 6px;
+}
+.um-secret-hint { font-size: 11px; color: #999; margin: 0; }
+
+.um-warning { font-size: 12px; }
+
+@media (max-width: 600px) {
+  .um-header-inner { flex-direction: column; align-items: flex-start; }
+  .um-card { flex-direction: column; align-items: flex-start; }
+  .um-card-actions { width: 100%; flex-wrap: wrap; }
+}

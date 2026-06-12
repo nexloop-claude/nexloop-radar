@@ -1,35 +1,63 @@
 import { useState } from 'react';
 import { PILLARS, getMaturityLevel } from '../data/pillars';
 import { BUSINESS_PILLARS } from '../data/businessPillars';
+import { listUsers } from '../utils/authV2';
 import './HistoryScreen.css';
-
-const HISTORY_KEY = 'nexloop_history';
-const DRAFTS_KEY  = 'nexloop_drafts';
 
 const TYPE_LABELS = {
   digital:  'Maturidade Digital',
   business: 'Assessment de Negócio',
 };
 
-function loadHistory() {
+function loadHistory(userId, isAdmin) {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
+    if (isAdmin) {
+      // Admin: aggregate all users' histories
+      const users = listUsers();
+      const userMap = Object.fromEntries(users.map(u => [u.id, u.username]));
+      const entries = [];
+      for (const key of Object.keys(localStorage)) {
+        if (!key.startsWith('nexloop_history_')) continue;
+        const uid = key.replace('nexloop_history_', '');
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const items = JSON.parse(raw);
+        items.forEach(e => entries.push({ ...e, _userId: uid, _username: userMap[uid] || uid }));
+      }
+      return entries.sort((a, b) => b.timestamp - a.timestamp);
+    }
+    const raw = localStorage.getItem(`nexloop_history_${userId}`);
     return raw ? JSON.parse(raw) : [];
   } catch { return []; }
 }
 
-function loadDrafts() {
+function loadDrafts(userId) {
   try {
-    const raw = localStorage.getItem(DRAFTS_KEY);
+    const raw = localStorage.getItem(`nexloop_drafts_${userId}`);
     const all = raw ? JSON.parse(raw) : [];
     return all.filter(d => d.step && d.step !== 'setup' && d.step !== 'report');
   } catch { return []; }
 }
 
-function deleteHistoryEntry(id) {
+function deleteHistoryEntry(id, userId, isAdmin) {
   try {
-    const history = loadHistory().filter(e => e.id !== id);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    if (isAdmin) {
+      // Find which user owns this entry
+      for (const key of Object.keys(localStorage)) {
+        if (!key.startsWith('nexloop_history_')) continue;
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const items = JSON.parse(raw);
+        if (items.find(e => e.id === id)) {
+          localStorage.setItem(key, JSON.stringify(items.filter(e => e.id !== id)));
+          return;
+        }
+      }
+    } else {
+      const key = `nexloop_history_${userId}`;
+      const history = loadHistory(userId, false).filter(e => e.id !== id);
+      localStorage.setItem(key, JSON.stringify(history));
+    }
   } catch { /* ignore */ }
 }
 
@@ -63,15 +91,22 @@ function IconClock() {
   );
 }
 
-export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, onDeleteDraft }) {
-  const initialDrafts = loadDrafts();
+export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, onDeleteDraft, userId, isAdmin }) {
+  const initialDrafts = loadDrafts(userId);
   const [drafts, setDrafts]   = useState(initialDrafts);
-  const [entries, setEntries] = useState(() => loadHistory());
+  const [entries, setEntries] = useState(() => loadHistory(userId, isAdmin));
   const [tab, setTab]         = useState(initialDrafts.length > 0 ? 'inprogress' : 'completed');
 
   function handleClearAllHistory() {
     if (!window.confirm(`Apagar todos os ${entries.length} relatórios concluídos? Esta ação não pode ser desfeita.`)) return;
-    try { localStorage.setItem('nexloop_history', JSON.stringify([])); } catch { /* ignore */ }
+    try {
+      if (isAdmin) {
+        Object.keys(localStorage).filter(k => k.startsWith('nexloop_history_'))
+          .forEach(k => localStorage.setItem(k, JSON.stringify([])));
+      } else {
+        localStorage.setItem(`nexloop_history_${userId}`, JSON.stringify([]));
+      }
+    } catch { /* ignore */ }
     setEntries([]);
   }
 
@@ -83,7 +118,7 @@ export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, on
 
   function handleDeleteHistory(id) {
     if (!window.confirm('Remover este relatório do histórico?')) return;
-    deleteHistoryEntry(id);
+    deleteHistoryEntry(id, userId, isAdmin);
     setEntries(prev => prev.filter(e => e.id !== id));
   }
 
@@ -264,6 +299,9 @@ export default function HistoryScreen({ onViewReport, onClose, onResumeDraft, on
                     <div className="history-card-left">
                       <div className="history-card-type">
                         {TYPE_LABELS[entry.assessmentType] || 'Assessment'}
+                        {isAdmin && entry._username && (
+                          <span className="history-user-tag"> · {entry._username}</span>
+                        )}
                       </div>
                       <div className="history-card-company">
                         {entry.companyInfo?.company || '—'}

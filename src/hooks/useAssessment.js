@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { PILLARS } from '../data/pillars';
 import { BUSINESS_PILLARS } from '../data/businessPillars';
 
-const DRAFTS_KEY  = 'nexloop_drafts';
-const HISTORY_KEY = 'nexloop_history';
 const LEGACY_KEY  = 'nexloop_current_assessment'; // migration from single-draft format
+
+function getDraftsKey(userId)  { return userId ? `nexloop_drafts_${userId}`  : 'nexloop_drafts'; }
+function getHistoryKey(userId) { return userId ? `nexloop_history_${userId}` : 'nexloop_history'; }
 
 const initialState = {
   step: 'setup',
@@ -28,55 +29,55 @@ const initialState = {
 
 // ── Draft persistence ─────────────────────────────────────────────
 
-function readDrafts() {
+function readDrafts(key) {
   try {
-    const raw = localStorage.getItem(DRAFTS_KEY);
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-function writeDrafts(drafts) {
+function writeDrafts(key, drafts) {
   try {
-    localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
+    localStorage.setItem(key, JSON.stringify(drafts));
   } catch { /* ignore */ }
 }
 
-function migrateLegacyDraft() {
+function migrateLegacyDraft(draftsKey) {
   try {
     const legacyRaw = localStorage.getItem(LEGACY_KEY);
     if (!legacyRaw) return;
     const legacy = JSON.parse(legacyRaw);
     if (legacy?.step && legacy.step !== 'setup' && legacy.step !== 'report') {
-      const drafts = readDrafts();
+      const drafts = readDrafts(draftsKey);
       const legacyId = `draft_${legacy.lastSavedAt || Date.now()}`;
       if (!drafts.find(d => d.id === legacyId)) {
         drafts.push({ ...legacy, id: legacyId, createdAt: legacy.lastSavedAt || Date.now() });
-        writeDrafts(drafts);
+        writeDrafts(draftsKey, drafts);
       }
     }
   } catch { /* ignore */ }
   localStorage.removeItem(LEGACY_KEY);
 }
 
-function upsertDraft(draft) {
-  const drafts = readDrafts();
+function upsertDraft(key, draft) {
+  const drafts = readDrafts(key);
   const idx = drafts.findIndex(d => d.id === draft.id);
   if (idx >= 0) drafts[idx] = draft;
   else drafts.push(draft);
-  writeDrafts(drafts);
+  writeDrafts(key, drafts);
 }
 
-function eraseDraft(id) {
-  writeDrafts(readDrafts().filter(d => d.id !== id));
+function eraseDraft(key, id) {
+  writeDrafts(key, readDrafts(key).filter(d => d.id !== id));
 }
 
 // ── History persistence ───────────────────────────────────────────
 
-function saveToHistory(state) {
+function saveToHistory(historyKey, state) {
   try {
-    const raw = localStorage.getItem(HISTORY_KEY);
+    const raw = localStorage.getItem(historyKey);
     const history = raw ? JSON.parse(raw) : [];
     history.unshift({
       id: Date.now(),
@@ -86,15 +87,18 @@ function saveToHistory(state) {
       reportData: state.reportData,
       timestamp: Date.now(),
     });
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 20)));
+    localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 20)));
   } catch { /* ignore */ }
 }
 
 // ── Hook ─────────────────────────────────────────────────────────
 
-export function useAssessment() {
+export function useAssessment(userId) {
+  const draftsKey  = getDraftsKey(userId);
+  const historyKey = getHistoryKey(userId);
+
   const [state, setState] = useState(() => {
-    migrateLegacyDraft();
+    migrateLegacyDraft(draftsKey);
     return { ...initialState };
   });
   const [lastSavedAt, setLastSavedAt] = useState(null);
@@ -106,7 +110,7 @@ export function useAssessment() {
   useEffect(() => {
     if ((state.step === 'questionnaire' || state.step === 'analyzing') && state.draftId) {
       const ts = Date.now();
-      upsertDraft({ ...state, lastSavedAt: ts });
+      upsertDraft(draftsKey, { ...state, lastSavedAt: ts });
       setLastSavedAt(ts);
     }
   }, [state]);
@@ -116,7 +120,7 @@ export function useAssessment() {
     function handleBeforeUnload() {
       const s = stateRef.current;
       if ((s.step === 'questionnaire' || s.step === 'analyzing') && s.draftId) {
-        upsertDraft({ ...s, lastSavedAt: Date.now() });
+        upsertDraft(draftsKey, { ...s, lastSavedAt: Date.now() });
       }
     }
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -160,7 +164,7 @@ export function useAssessment() {
       createdAt: Date.now(),
     };
     setState(newState);
-    upsertDraft(newState);
+    upsertDraft(draftsKey, newState);
   }
 
   function goToNextQuestion() {
@@ -210,14 +214,14 @@ export function useAssessment() {
   function finishAssessment(pillarResults, reportData) {
     setState(prev => {
       const next = { ...prev, step: 'report', pillarResults, reportData };
-      saveToHistory(next);
-      if (prev.draftId) eraseDraft(prev.draftId);
+      saveToHistory(historyKey, next);
+      if (prev.draftId) eraseDraft(draftsKey, prev.draftId);
       return next;
     });
   }
 
   function resetAssessment() {
-    if (state.draftId) eraseDraft(state.draftId);
+    if (state.draftId) eraseDraft(draftsKey, state.draftId);
     setState({
       ...initialState,
       companyInfo: { ...initialState.companyInfo, date: new Date().toISOString().split('T')[0] },
@@ -231,11 +235,11 @@ export function useAssessment() {
   }
 
   function listDrafts() {
-    return readDrafts().filter(d => d.step && d.step !== 'setup' && d.step !== 'report');
+    return readDrafts(draftsKey).filter(d => d.step && d.step !== 'setup' && d.step !== 'report');
   }
 
   function deleteDraftById(id) {
-    eraseDraft(id);
+    eraseDraft(draftsKey, id);
   }
 
   return {
