@@ -69,7 +69,7 @@ async function aesDecrypt(ctHex, ivHex, password, saltHex) {
 // ── TOTP ─────────────────────────────────────────────────────────
 
 export function generateTOTPSecret() {
-  return OTPAuth.Secret.fromRandom(20).base32;
+  return new OTPAuth.Secret({ size: 20 }).base32;
 }
 
 export function getTOTPUri(secret, username) {
