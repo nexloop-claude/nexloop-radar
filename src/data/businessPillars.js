@@ -35,6 +35,12 @@ export const BUSINESS_PILLARS = [
         text: 'Como a empresa monitora as tendências tecnológicas do setor de construção e incorporação para se manter competitiva?',
         hint: 'Benchmarking, participação em eventos, consultores, associações do setor.',
         weight: 0.9
+      },
+      {
+        id: 'bs_6',
+        text: 'Quais sistemas e ferramentas digitais apoiam a gestão estratégica da empresa hoje? Existe integração entre esses sistemas para uma visão consolidada do negócio?',
+        hint: 'ERP, BI, dashboard executivo, ferramentas de OKR/BSC, plataformas de comunicação corporativa.',
+        weight: 1.0
       }
     ]
   },
@@ -80,6 +86,12 @@ export const BUSINESS_PILLARS = [
         text: 'Após a venda, como é feita a gestão do relacionamento com o cliente até a entrega do imóvel? Existe um sistema de acompanhamento?',
         hint: 'CRM pós-venda, portal do cliente, comunicação estruturada.',
         weight: 1
+      },
+      {
+        id: 'bc_7',
+        text: 'Faça um inventário dos sistemas utilizados pela área comercial: quais ferramentas o time usa para gestão de leads, contratos, assinatura digital e acompanhamento pós-venda? Esses sistemas estão integrados entre si?',
+        hint: 'CRM, plataforma de contratos, assinatura eletrônica, portal do comprador, sistemas de comissionamento, portais imobiliários.',
+        weight: 1.0
       }
     ]
   },
@@ -119,6 +131,12 @@ export const BUSINESS_PILLARS = [
         text: 'Como é gerenciada a reputação digital da empresa? Existe monitoramento de avaliações e menções em plataformas como Google, Reclame Aqui e redes sociais?',
         hint: 'Ferramentas de monitoramento, processo de resposta, gestão de crise.',
         weight: 0.9
+      },
+      {
+        id: 'bm_6',
+        text: 'Quais plataformas e ferramentas digitais o time de marketing utiliza atualmente? Existe integração dessas ferramentas com os sistemas comerciais da empresa?',
+        hint: 'Plataformas de mídia paga (Meta Ads, Google Ads), automação de marketing, CRM, SEO, gestão de redes sociais, analytics, criação de conteúdo.',
+        weight: 1.0
       }
     ]
   },
@@ -158,6 +176,12 @@ export const BUSINESS_PILLARS = [
         text: 'O controle de ponto e jornada dos colaboradores em obra é feito de forma digital? Como é gerenciado o banco de horas?',
         hint: 'Ponto eletrônico em obra, app de marcação, integração com folha.',
         weight: 1.2
+      },
+      {
+        id: 'brh_6',
+        text: 'Mapeie os sistemas de RH em uso na empresa: quais ferramentas são utilizadas para gestão de pessoal, folha de pagamento, ponto, treinamento e recrutamento? Há integração entre eles?',
+        hint: 'HRIS, ponto eletrônico, LMS, ATS, folha de pagamento, benefícios, sistemas de saúde e segurança do trabalho.',
+        weight: 1.0
       }
     ]
   },
@@ -197,6 +221,12 @@ export const BUSINESS_PILLARS = [
         text: 'A empresa emite e recebe documentos fiscais (NF-e, NFS-e, boletos) de forma digitalizada e integrada aos sistemas?',
         hint: 'Emissor de NF integrado, gestão de boletos, SPED automático.',
         weight: 1
+      },
+      {
+        id: 'bf_6',
+        text: 'Quais sistemas são utilizados pelo financeiro e controladoria da empresa? Existe integração entre ERP, banco, fiscal e relatórios gerenciais em uma visão consolidada?',
+        hint: 'ERP (TOTVS, SAP, Sienge), sistemas bancários e open banking, emissor fiscal, BI financeiro, ferramentas de conciliação e planejamento.',
+        weight: 1.0
       }
     ]
   },
@@ -236,6 +266,12 @@ export const BUSINESS_PILLARS = [
         text: 'Como são monitoradas e gerenciadas as ações judiciais em andamento? Existe um sistema para acompanhamento de processos?',
         hint: 'Sistemas jurídicos, JusBrasil, controle de prazos processuais.',
         weight: 0.9
+      },
+      {
+        id: 'bjl_6',
+        text: 'Quais sistemas e ferramentas digitais o setor jurídico utiliza para gestão de contratos, processos, compliance e documentação? Esses sistemas estão integrados às demais áreas?',
+        hint: 'CLM, sistemas jurídicos (Lawoffice, Projuris, Legaldesk), assinatura digital, repositório de documentos, monitoramento processual automático.',
+        weight: 1.0
       }
     ]
   },
@@ -275,6 +311,12 @@ export const BUSINESS_PILLARS = [
         text: 'As reclamações e feedbacks dos clientes são analisados sistematicamente para gerar melhorias nos processos da empresa?',
         hint: 'Análise de causa raiz, ciclo de melhoria contínua, VOC.',
         weight: 1
+      },
+      {
+        id: 'bcx_6',
+        text: 'Mapeie os sistemas de atendimento ao cliente utilizados: quais ferramentas a empresa usa para registrar, acompanhar e resolver demandas? Há integração com CRM e dados de histórico do cliente?',
+        hint: 'CRM de atendimento, helpdesk (Zendesk, Freshdesk), chatbot, plataformas de WhatsApp Business, portal do cliente, app de assistência técnica.',
+        weight: 1.0
       }
     ]
   },
@@ -320,6 +362,12 @@ export const BUSINESS_PILLARS = [
         text: 'A empresa tem visibilidade antecipada das necessidades de material por obra, permitindo planejar compras e evitar desabastecimento ou excesso de estoque?',
         hint: 'Planejamento de suprimentos baseado em cronograma físico, curva ABC de materiais.',
         weight: 1.1
+      },
+      {
+        id: 'bsu_7',
+        text: 'Quais sistemas são utilizados pela área de suprimentos para gestão de compras, cotações, fornecedores e estoque? Há integração com o ERP e os sistemas de obra?',
+        hint: 'ERP de obras (Sienge, Volare, TOTVS Construção), plataformas de e-procurement, sistema de almoxarifado, portal de fornecedores, controle de contratos de fornecimento.',
+        weight: 1.0
       }
     ]
   },
@@ -359,6 +407,12 @@ export const BUSINESS_PILLARS = [
         text: 'A empresa realiza análises periódicas de gastos administrativos para identificar oportunidades de redução de custos?',
         hint: 'Análise de spend, renegociação com fornecedores, benchmarking de preços.',
         weight: 0.9
+      },
+      {
+        id: 'bpr_6',
+        text: 'Quais ferramentas e sistemas a área de compras administrativas utiliza para requisições, aprovações, controle de gastos e gestão de contratos de serviços?',
+        hint: 'ERP, sistemas de e-procurement, ferramentas de gestão de despesas (Concur, Conta Simples, SAP Concur), aprovação por workflow, cartão corporativo com relatório integrado.',
+        weight: 1.0
       }
     ]
   },
@@ -404,6 +458,18 @@ export const BUSINESS_PILLARS = [
         text: 'Como é feita a gestão da documentação técnica e legal dos empreendimentos (memorial descritivo, especificações, habite-se)?',
         hint: 'GED, repositório de documentos, controle de versões, digitalização.',
         weight: 1
+      },
+      {
+        id: 'bi_7',
+        text: 'Mapeie os principais sistemas utilizados pelo setor de incorporação: quais ferramentas apoiam a análise de viabilidade, aprovações, gestão documental e acompanhamento dos empreendimentos?',
+        hint: 'Sistemas de viabilidade econômica (Excel, softwares especializados), GED, ERP de incorporação, portais de aprovação pública, gestão de SPE, controle de contratos de venda.',
+        weight: 1.0
+      },
+      {
+        id: 'bi_8',
+        text: 'A empresa utiliza BIM (Building Information Modeling) na fase de incorporação? O modelo BIM é considerado nos estudos de viabilidade, aprovações junto aos órgãos públicos e compatibilização de projetos do empreendimento?',
+        hint: 'Uso de modelos BIM para aprovações, extração de quantitativos para viabilidade econômica, integração BIM entre incorporação e engenharia, conformidade com o Decreto Federal BIM (11.888/2023).',
+        weight: 1.1
       }
     ]
   },
@@ -443,6 +509,12 @@ export const BUSINESS_PILLARS = [
         text: 'Como é gerenciada a movimentação interna de materiais e equipamentos entre canteiros, almoxarifado e frentes de trabalho?',
         hint: 'Controle de movimentação interna, transferências entre obras, inventário.',
         weight: 1.1
+      },
+      {
+        id: 'bl_6',
+        text: 'Quais sistemas a área de logística utiliza para gerenciar entregas, frota, rastreamento e movimentação de materiais? Esses sistemas se integram ao ERP e aos sistemas de gestão de obras?',
+        hint: 'TMS (Transportation Management System), gestão de frota, rastreamento GPS, app de recebimento e conferência em obra, integração com almoxarifado e ERP.',
+        weight: 1.0
       }
     ]
   },
@@ -487,6 +559,18 @@ export const BUSINESS_PILLARS = [
         id: 'be_6',
         text: 'Como é gerenciada a segurança do trabalho na obra? Os registros de SSO (treinamentos, incidentes, DDS) são feitos em sistema digital?',
         hint: 'App de SSO, e-Social, relatórios de acidente, DDS digital, ASO.',
+        weight: 1.2
+      },
+      {
+        id: 'be_7',
+        text: 'Mapeie todos os sistemas digitais utilizados pela engenharia: softwares de projeto, orçamento, planejamento, gestão de obras, qualidade e segurança. Há integração entre eles e com o ERP da empresa?',
+        hint: 'CAD/BIM (AutoCAD, Revit, ArchiCAD), orçamento (Volare, Sienge, PLEO), planejamento (MS Project, Primavera), apps de obra (Construmanager, Buildin), qualidade e SSO.',
+        weight: 1.0
+      },
+      {
+        id: 'be_8',
+        text: 'Qual o nível de maturidade BIM da empresa? Existe um Plano de Execução BIM (BEP) formalizado? O modelo BIM é utilizado além do projeto — para orçamento (5D), planejamento (4D), gestão de canteiro e facilities (6D)?',
+        hint: 'Nível de maturidade BIM (0 a 3), usos BIM implementados, BEP, LOD por disciplina, coordenação e clash detection, ISO 19650, conformidade com o Decreto Federal BIM (11.888/2023).',
         weight: 1.2
       }
     ]
